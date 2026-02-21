@@ -1,30 +1,33 @@
 import { Text, ThemeIcon, Divider, Stack, Box } from '@mantine/core'
-import { Bus, BarChart2, MapPin, Info, Cpu, Database } from 'lucide-react'
+import { Home, BarChart2, MapPin, Info, Cpu, Database } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { Icon: BarChart2, label: 'Predict',    sub: 'Delay forecast',     active: true  },
-  { Icon: MapPin,    label: 'Routes',     sub: '5 intercity routes', active: false },
-  { Icon: Info,      label: 'About',      sub: 'Model & data',       active: false },
+  { Icon: BarChart2, label: 'Predict',    sub: 'Price forecast',      active: true  },
+  { Icon: MapPin,    label: 'Districts',  sub: 'All Sri Lanka',        active: false },
+  { Icon: Info,      label: 'About',      sub: 'Model & data',         active: false },
 ]
 
-const STATS = [
-  { Icon: Cpu,      label: 'Algorithm', value: 'LightGBM v4'  },
-  { Icon: Database, label: 'Dataset',   value: '500 trips'    },
-  { Icon: BarChart2,label: 'Accuracy',  value: '81.3%'        },
-]
+export default function Sidebar({ meta }) {
+  const r2  = meta?.metrics?.R2   ? `${(meta.metrics.R2 * 100).toFixed(1)}%` : '81.6%'
+  const n   = meta?.dataset_size  ? meta.dataset_size.toLocaleString()        : '8,791'
 
-export default function Sidebar() {
+  const STATS = [
+    { Icon: Cpu,      label: 'Algorithm', value: 'LightGBM v4' },
+    { Icon: Database, label: 'Listings',  value: `${n} rows`   },
+    { Icon: BarChart2,label: 'R² Score',  value: r2            },
+  ]
+
   return (
     <aside className="sidebar">
 
       {/* Brand */}
       <div className="sidebar-brand">
         <ThemeIcon variant="light" color="indigo" size={40} radius="md">
-          <Bus size={20} />
+          <Home size={20} />
         </ThemeIcon>
         <div>
-          <Text size="sm" fw={700} c="white" lh={1.2}>SBDP</Text>
-          <Text size="xs" c="dimmed" lh={1.1}>Bus Predictor</Text>
+          <Text size="sm" fw={700} c="white" lh={1.2}>SLPPP</Text>
+          <Text size="xs" c="dimmed" lh={1.1}>Price Predictor</Text>
         </div>
       </div>
 
@@ -66,8 +69,8 @@ export default function Sidebar() {
 
       {/* Footer */}
       <Box className="sidebar-footer">
-        <Text size="xs" c="dimmed">Sri Lanka · 2024</Text>
-        <Text size="xs" c="dimmed" mt={2}>SHAP · LIME · PDP</Text>
+        <Text size="xs" c="dimmed">Sri Lanka · ikman.lk</Text>
+        <Text size="xs" c="dimmed" mt={2}>SHAP · LightGBM</Text>
       </Box>
 
     </aside>

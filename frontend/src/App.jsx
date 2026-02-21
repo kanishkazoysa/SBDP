@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Text, Group, ThemeIcon, Alert } from '@mantine/core'
-import { Bus, AlertCircle, BarChart2 } from 'lucide-react'
+import { Home, AlertCircle, BarChart2 } from 'lucide-react'
 import Sidebar from './components/Sidebar'
 import PredictionForm from './components/PredictionForm'
 import PredictionResult from './components/PredictionResult'
@@ -10,15 +10,24 @@ export default function App() {
   const [result, setResult]   = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState(null)
+  const [meta, setMeta]       = useState(null)
 
-  const handlePredict = async (tripData) => {
+  // Load locations + property types from backend on mount
+  useEffect(() => {
+    fetch('/meta')
+      .then(r => r.json())
+      .then(setMeta)
+      .catch(() => {})
+  }, [])
+
+  const handlePredict = async (formData) => {
     setLoading(true)
     setError(null)
     try {
       const res = await fetch('/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(tripData),
+        body: JSON.stringify(formData),
       })
       if (!res.ok) {
         const err = await res.json()
@@ -39,14 +48,14 @@ export default function App() {
       <header className="site-header">
         <Group gap="sm">
           <ThemeIcon variant="light" color="indigo" size={38} radius="md">
-            <Bus size={19} />
+            <Home size={19} />
           </ThemeIcon>
           <div>
             <Text fw={700} size="md" c="white" lh={1.3}>
-              Sri Lanka Bus Delay Predictor
+              Sri Lanka Property Price Predictor
             </Text>
             <Text size="xs" c="dimmed" lh={1.2}>
-              LightGBM · SHAP Explainability · 5 Intercity Routes
+              LightGBM · SHAP Explainability · ikman.lk Data · {meta ? `${meta.dataset_size.toLocaleString()} listings` : '8,791 listings'}
             </Text>
           </div>
         </Group>
@@ -56,14 +65,14 @@ export default function App() {
       <div className="app-body">
 
         {/* Sidebar */}
-        <Sidebar />
+        <Sidebar meta={meta} />
 
         {/* Form panel */}
         <div className="panel panel-left">
-          <PredictionForm onPredict={handlePredict} loading={loading} />
+          <PredictionForm onPredict={handlePredict} loading={loading} meta={meta} />
         </div>
 
-        {/* Results panel — Prediction Result on top, SHAP below */}
+        {/* Results panel */}
         <div className="panel panel-right">
           {error && (
             <Alert
@@ -81,17 +90,10 @@ export default function App() {
 
           {result ? (
             <>
-              {/* Prediction result — natural height */}
               <div style={{ flexShrink: 0, marginBottom: 16 }}>
                 <PredictionResult result={result} />
               </div>
-
-              {/* SHAP chart — fills remaining panel height */}
-              <ShapChart
-                shapValues={result.shap_values}
-                featureNames={result.feature_names}
-                prediction={result.prediction}
-              />
+              <ShapChart shapFeatures={result.shap_features} />
             </>
           ) : !error && (
             <div className="panel-empty">
@@ -102,7 +104,7 @@ export default function App() {
                 No Prediction Yet
               </Text>
               <Text size="xs" c="dimmed" mt={4}>
-                Fill in trip details and click Predict Delay
+                Fill in property details and click Predict Price
               </Text>
             </div>
           )}

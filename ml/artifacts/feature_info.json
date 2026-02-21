@@ -1,0 +1,55 @@
+{
+  "features": [
+    "property_type",
+    "location",
+    "bedrooms",
+    "bathrooms",
+    "land_size_perches",
+    "is_for_rent"
+  ],
+  "target": "price_lkr",
+  "categorical_features": [
+    "property_type",
+    "location"
+  ],
+  "numeric_features": [
+    "bedrooms",
+    "bathrooms",
+    "land_size_perches",
+    "is_for_rent"
+  ],
+  "n_rows": 8791,
+  "price_stats": {
+    "min": 155000.0,
+    "max": 320000000.0,
+    "mean": 31520692.088613354,
+    "median": 6000000.0
+  },
+  "property_type_counts": {
+    "Land": 4871,
+    "House": 1996,
+    "Apartment": 1924
+  },
+  "location_counts": {
+    "Colombo": 5577,
+    "Gampaha": 1647,
+    "Kalutara": 567,
+    "Matara": 169,
+    "Kandy": 148,
+    "Kurunegala": 139,
+    "Hambantota": 135,
+    "Galle": 81,
+    "Anuradhapura": 63,
+    "Matale": 52,
+    "Kegalle": 44,
+    "Ratnapura": 32,
+    "Nuwara Eliya": 28,
+    "Jaffna": 28,
+    "Badulla": 25,
+    "Puttalam": 19,
+    "Monaragala": 14,
+    "Batticaloa": 7,
+    "Ampara": 5,
+    "Trincomalee": 5
+  }
+}

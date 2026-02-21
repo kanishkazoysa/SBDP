@@ -1,0 +1,37 @@
+{
+  "train": {
+    "MAE": 13623365.826525843,
+    "RMSE": 30930989.919413604,
+    "R2": 0.8556190447023206,
+    "MAPE": 75.55351724069229
+  },
+  "val": {
+    "MAE": 14042845.347745376,
+    "RMSE": 31887390.520886544,
+    "R2": 0.8494369173270804,
+    "MAPE": 78.08583802647703
+  },
+  "test": {
+    "MAE": 12899736.78989121,
+    "RMSE": 28915205.511419177,
+    "R2": 0.8160303989420566,
+    "MAPE": 75.74318938556287
+  },
+  "best_iteration": 192,
+  "hyperparameters": {
+    "objective": "regression",
+    "metric": "rmse",
+    "boosting_type": "gbdt",
+    "n_estimators": 1000,
+    "learning_rate": 0.05,
+    "num_leaves": 63,
+    "max_depth": -1,
+    "min_child_samples": 20,
+    "feature_fraction": 0.8,
+    "bagging_fraction": 0.8,
+    "bagging_freq": 5,
+    "reg_alpha": 0.1,
+    "reg_lambda": 0.1,
+    "random_state": 42
+  }
+}
