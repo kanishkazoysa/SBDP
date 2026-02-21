@@ -24,7 +24,7 @@ app.add_middleware(
 )
 
 # ── Load artifacts ─────────────────────────────────────────────────────────────
-ARTIFACT_DIR = Path(__file__).parent.parent / "ml" / "artifacts"
+ARTIFACT_DIR = Path(__file__).parent / "ml" / "artifacts"
 
 with open(ARTIFACT_DIR / "lgbm_model.pkl", "rb") as f:
     model = pickle.load(f)

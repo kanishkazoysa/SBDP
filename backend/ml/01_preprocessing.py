@@ -16,7 +16,7 @@ import numpy as np
 import json
 from pathlib import Path
 
-RAW_CSV   = Path(__file__).parent.parent / "dataset" / "properties_raw.csv"
+RAW_CSV   = Path(__file__).parent.parent.parent / "dataset" / "properties_raw.csv"
 OUT_CSV   = Path(__file__).parent / "artifacts" / "processed.csv"
 FEAT_JSON = Path(__file__).parent / "artifacts" / "feature_info.json"
 

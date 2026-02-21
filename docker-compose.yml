@@ -1,0 +1,54 @@
+# ── docker-compose.yml ────────────────────────────────────────────
+# Sri Lanka Property Price Predictor
+#
+# Services:
+#   backend  — FastAPI + LightGBM model  (port 8000)
+#   frontend — React app via nginx       (port 3000)
+#
+# Usage:
+#   docker-compose up --build          # first time
+#   docker-compose up                  # subsequent runs
+#   docker-compose down                # stop
+
+version: "3.9"
+
+services:
+  # ── Backend: FastAPI + ML model ─────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sl_property_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount dataset so ML scripts can read the CSV
+      - ./dataset:/dataset:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── Frontend: React + nginx ─────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sl_property_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+# ── Usage Notes ───────────────────────────────────────────────────
+# After running: open http://localhost:3000 in your browser
+# Backend API docs: http://localhost:8000/docs  (Swagger UI)
+#
+# To re-train the model inside Docker:
+#   docker exec sl_property_backend python ml/01_preprocessing.py
+#   docker exec sl_property_backend python ml/02_train_evaluate.py

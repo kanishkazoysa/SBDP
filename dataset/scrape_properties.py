@@ -1,9 +1,15 @@
 """
-Sri Lanka Property Scraper
+Sri Lanka Property Scraper  (v2 — with listed_at)
 ==========================
 Sources:
   ikman.lk  - land-for-sale, houses, apartments-for-sale (26 ads/page)
   lankapropertyweb.com - article.listing-item with from_index pagination (30/page)
+
+NEW in v2:
+  - Extracts `listed_at` from ikman.lk JSON (the date the seller posted the ad)
+  - Extracts `posted_days_ago` for reference
+  - This gives us a real 90-day time series of property prices!
+
 Target : 5000+ raw non-preprocessed records
 Output : dataset/properties_raw.csv
 Run    : python -u dataset/scrape_properties.py
@@ -17,7 +23,7 @@ import csv
 import random
 from pathlib import Path
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timedelta
 
 OUTPUT_CSV = Path(__file__).parent / "properties_raw.csv"
 
@@ -33,22 +39,31 @@ HEADERS = {
     "Connection": "keep-alive",
 }
 
+# ── UPDATED FIELDNAMES: added listed_at and posted_days_ago ───────────────────
 FIELDNAMES = [
     "source", "title", "price_lkr", "price_raw",
     "location", "district", "property_type", "ad_type",
     "bedrooms", "bathrooms", "land_size_perches", "floor_area_sqft",
-    "description", "url", "scraped_at",
+    "description", "url",
+    "listed_at",        # ← NEW: date the ad was originally posted on ikman.lk
+    "posted_days_ago",  # ← NEW: how many days ago it was posted (integer)
+    "scraped_at",
 ]
 
 # ikman.lk categories (slug, ad_type, max_pages)
 IKMAN_CATEGORIES = [
-    ("land-for-sale",       "for_sale", 200),  # 31k listings
-    ("houses",              "for_sale",  80),  # 19k listings
-    ("apartments-for-sale", "for_sale",  80),  # 3k listings
+    ("land-for-sale",       "for_sale", 200),  # ~31k listings
+    ("houses",              "for_sale",  80),  # ~19k listings
+    ("apartments-for-sale", "for_sale",  80),  # ~3k listings
 ]
 
 def log(msg):
-    print(msg, flush=True)
+    # Safe print for Windows terminals that don't support full Unicode (e.g. cp1252)
+    try:
+        print(msg, flush=True)
+    except UnicodeEncodeError:
+        safe_msg = msg.encode("ascii", errors="replace").decode("ascii")
+        print(safe_msg, flush=True)
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -96,6 +111,90 @@ def parse_price(raw: str):
     return None
 
 
+def parse_relative_time(time_str: str) -> tuple[str, int] | tuple[None, None]:
+    """
+    Parse ikman.lk relative time strings into (iso_date, days_ago).
+
+    ikman.lk uses these formats in `timeStamp` and `lastBumpUpDate`:
+      - "just now", "a minute ago"
+      - "4 minutes", "15 hours"
+      - "3 days", "2 weeks"
+      - "1 month", "3 months"
+      - "bump_up"  ← means re-bumped, ignore for original posting estimate
+    """
+    if not time_str or time_str.strip().lower() in ("bump_up", "", "just now", "a minute ago"):
+        days_ago = 0
+        dt = datetime.now() - timedelta(days=days_ago)
+        return dt.isoformat(), days_ago
+
+    s = time_str.strip().lower()
+
+    m = re.search(r"(\d+)\s*minute", s)
+    if m:
+        dt = datetime.now() - timedelta(minutes=int(m.group(1)))
+        return dt.isoformat(), 0
+
+    m = re.search(r"(\d+)\s*hour", s)
+    if m:
+        dt = datetime.now() - timedelta(hours=int(m.group(1)))
+        return dt.isoformat(), 0
+
+    m = re.search(r"(\d+)\s*day", s)
+    if m:
+        days = int(m.group(1))
+        dt = datetime.now() - timedelta(days=days)
+        return dt.isoformat(), days
+
+    m = re.search(r"(\d+)\s*week", s)
+    if m:
+        days = int(m.group(1)) * 7
+        dt = datetime.now() - timedelta(days=days)
+        return dt.isoformat(), days
+
+    m = re.search(r"(\d+)\s*month", s)
+    if m:
+        days = int(m.group(1)) * 30
+        dt = datetime.now() - timedelta(days=days)
+        return dt.isoformat(), days
+
+    return None, None
+
+
+def parse_ikman_date(ad: dict) -> tuple[str, int | None]:
+    """
+    Extract the posting date from ikman.lk ad JSON.
+
+    Real fields found in ikman.lk JSON:
+      - timeStamp     : original posting time (relative string)
+      - lastBumpUpDate: when seller last bumped (relative string)
+
+    We use timeStamp as the original listed date.
+    If timeStamp is 'bump_up', the ad was re-bumped — we use lastBumpUpDate
+    as a lower bound (the bump happened at most X ago,  so original post
+    could be older; we estimate it as +7 days older).
+
+    Returns: (listed_at_iso_str, posted_days_ago_int)
+    """
+    timestamp_str  = str(ad.get("timeStamp",     "") or "")
+    bump_date_str  = str(ad.get("lastBumpUpDate", "") or "")
+
+    if timestamp_str and timestamp_str.lower() != "bump_up":
+        # timeStamp is the original posting time
+        listed_at, days_ago = parse_relative_time(timestamp_str)
+        return listed_at, days_ago
+    elif bump_date_str:
+        # Ad was bumped — bump date is MORE RECENT than original post
+        # Add 7 days offset as an estimate (bumped ads are typically 1-4 weeks old)
+        listed_at, days_ago = parse_relative_time(bump_date_str)
+        if days_ago is not None:
+            days_ago_est = days_ago + 7  # estimate original post was ~7 days before bump
+            dt = datetime.now() - timedelta(days=days_ago_est)
+            return dt.isoformat(), days_ago_est
+        return listed_at, days_ago
+
+    return None, None
+
+
 def safe_int(v):
     try:
         return int(v)
@@ -115,6 +214,7 @@ def safe_float(v):
 def scrape_ikman_category(session, slug: str, ad_type: str, max_pages: int) -> list:
     records = []
     consecutive_empty = 0
+    date_found_count = 0   # track how many ads have a date
 
     for page in range(1, max_pages + 1):
         url = f"https://ikman.lk/en/ads/sri-lanka/{slug}?page={page}"
@@ -176,6 +276,17 @@ def scrape_ikman_category(session, slug: str, ad_type: str, max_pages: int) -> l
                 prop_type = cat.get("name", "") if isinstance(cat, dict) else str(cat)
                 slug_val  = str(ad.get("slug", "") or "")
 
+                # ── NEW: extract listed_at date ────────────────────────────────
+                listed_at, posted_days_ago = parse_ikman_date(ad)
+
+                # Debug: on first page, log ALL keys available in first ad
+                if page == 1 and len(records) == 0:
+                    log(f"    [{slug}] First ad keys: {list(ad.keys())}")
+                    log(f"    [{slug}] listed_at={listed_at}, days_ago={posted_days_ago}")
+
+                if listed_at:
+                    date_found_count += 1
+
                 records.append({
                     "source":            "ikman.lk",
                     "title":             str(ad.get("title", "") or ""),
@@ -191,10 +302,12 @@ def scrape_ikman_category(session, slug: str, ad_type: str, max_pages: int) -> l
                     "floor_area_sqft":   floor_area,
                     "description":       details,
                     "url":               f"https://ikman.lk/en/ad/{slug_val}",
+                    "listed_at":         listed_at,         # ← NEW
+                    "posted_days_ago":   posted_days_ago,   # ← NEW
                     "scraped_at":        datetime.now().isoformat(),
                 })
 
-            log(f"    [{slug}] Page {page:>3}: +{len(ads):>2}  cat total={len(records):>4}")
+            log(f"    [{slug}] Page {page:>3}: +{len(ads):>2}  total={len(records):>4}  dated={date_found_count}")
             time.sleep(random.uniform(1.0, 2.5))
 
         except requests.Timeout:
@@ -204,6 +317,7 @@ def scrape_ikman_category(session, slug: str, ad_type: str, max_pages: int) -> l
             log(f"    [{slug}] Page {page}: {e}")
             time.sleep(5)
 
+    log(f"    [{slug}] DONE: {len(records)} records, {date_found_count} with listing date ({date_found_count*100//max(len(records),1)}%)")
     return records
 
 
@@ -326,6 +440,8 @@ def parse_lpw_card(card) -> dict | None:
         "floor_area_sqft":   floor_area,
         "description":       text[:300],
         "url":               href,
+        "listed_at":         None,   # lankapropertyweb doesn't expose posting date
+        "posted_days_ago":   None,
         "scraped_at":        datetime.now().isoformat(),
     }
 
@@ -402,7 +518,7 @@ def save_csv(records: list, path: Path) -> None:
 
 if __name__ == "__main__":
     log("=" * 60)
-    log("  Sri Lanka Property Scraper")
+    log("  Sri Lanka Property Scraper  v2 (with listing dates)")
     log(f"  Started : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     log(f"  Target  : 5000+ records -> {OUTPUT_CSV.name}")
     log("=" * 60)
@@ -414,6 +530,13 @@ if __name__ == "__main__":
     ikman_recs = scrape_all_ikman()
     all_records.extend(ikman_recs)
     log(f"\nikman.lk TOTAL: {len(ikman_recs):,} unique records")
+
+    # Quick date stats
+    dated = [r for r in ikman_recs if r.get("listed_at")]
+    log(f"  Ads with listing date: {len(dated):,} ({len(dated)*100//max(len(ikman_recs),1)}%)")
+    if dated:
+        dates = sorted([r["listed_at"] for r in dated])
+        log(f"  Date range: {dates[0][:10]} → {dates[-1][:10]}")
 
     save_csv(all_records, OUTPUT_CSV)
 
