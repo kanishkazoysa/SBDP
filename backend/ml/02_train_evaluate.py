@@ -49,7 +49,7 @@ df = pd.read_csv(PROCESSED)
 print(f"Loaded {len(df):,} rows")
 
 FEATURES = ["property_type", "location", "bedrooms", "bathrooms",
-            "land_size_perches", "is_for_rent"]
+            "land_size_perches", "is_for_rent", "quality_tier", "is_furnished"]
 TARGET   = "price_lkr"
 
 X = df[FEATURES].copy()

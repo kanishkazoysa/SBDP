@@ -39,16 +39,75 @@ HEADERS = {
     "Connection": "keep-alive",
 }
 
-# ── UPDATED FIELDNAMES: added listed_at and posted_days_ago ───────────────────
+# ── UPDATED FIELDNAMES: added city + listed_at + posted_days_ago ─────────────
 FIELDNAMES = [
     "source", "title", "price_lkr", "price_raw",
-    "location", "district", "property_type", "ad_type",
+    "city",            # ← NEW: town/city within the district (e.g. Dehiwala)
+    "location",        # district name (e.g. Colombo)
+    "district",        # same as location — kept for compatibility
+    "property_type", "ad_type",
     "bedrooms", "bathrooms", "land_size_perches", "floor_area_sqft",
     "description", "url",
-    "listed_at",        # ← NEW: date the ad was originally posted on ikman.lk
-    "posted_days_ago",  # ← NEW: how many days ago it was posted (integer)
+    "listed_at",
+    "posted_days_ago",
     "scraped_at",
 ]
+
+# ── Sri Lanka: city/town → district mapping ───────────────────────────────────
+# Used when ikman returns a city name and we need to infer the district.
+CITY_TO_DISTRICT = {
+    # Colombo District
+    "Dehiwala":"Colombo","Mount Lavinia":"Colombo","Moratuwa":"Colombo",
+    "Nugegoda":"Colombo","Maharagama":"Colombo","Battaramulla":"Colombo",
+    "Kaduwela":"Colombo","Malabe":"Colombo","Pannipitiya":"Colombo",
+    "Homagama":"Colombo","Piliyandala":"Colombo","Kottawa":"Colombo",
+    "Boralesgamuwa":"Colombo","Angoda":"Colombo","Kolonnawa":"Colombo",
+    "Rajagiriya":"Colombo","Talawatugoda":"Colombo","Sri Jayawardenepura":"Colombo",
+    "Kotte":"Colombo","Athurugiriya":"Colombo","Padukka":"Colombo",
+    "Avissawella":"Colombo","Hanwella":"Colombo","Colombo":"Colombo",
+    # Gampaha District
+    "Negombo":"Gampaha","Wattala":"Gampaha","Ja-Ela":"Gampaha",
+    "Kelaniya":"Gampaha","Kiribathgoda":"Gampaha","Kadawatha":"Gampaha",
+    "Ragama":"Gampaha","Gampaha":"Gampaha","Minuwangoda":"Gampaha",
+    "Ekala":"Gampaha","Veyangoda":"Gampaha","Nittambuwa":"Gampaha",
+    "Mirigama":"Gampaha","Divulapitiya":"Gampaha","Ganemulla":"Gampaha",
+    # Kalutara District
+    "Kalutara":"Kalutara","Panadura":"Kalutara","Horana":"Kalutara",
+    "Bandaragama":"Kalutara","Ingiriya":"Kalutara","Agalawatta":"Kalutara",
+    "Aluthgama":"Kalutara","Beruwala":"Kalutara","Wadduwa":"Kalutara",
+    # Kandy District
+    "Kandy":"Kandy","Peradeniya":"Kandy","Katugastota":"Kandy",
+    "Gampola":"Kandy","Nawalapitiya":"Kandy","Akurana":"Kandy",
+    # Galle District
+    "Galle":"Galle","Hikkaduwa":"Galle","Ambalangoda":"Galle",
+    "Elpitiya":"Galle","Karandeniya":"Galle",
+    # Matara District
+    "Matara":"Matara","Weligama":"Matara","Mirissa":"Matara",
+    "Dickwella":"Matara","Akuressa":"Matara",
+    # Other districts — district name = city name (common case)
+    "Kurunegala":"Kurunegala","Puttalam":"Puttalam","Anuradhapura":"Anuradhapura",
+    "Polonnaruwa":"Polonnaruwa","Badulla":"Badulla","Monaragala":"Monaragala",
+    "Ratnapura":"Ratnapura","Kegalle":"Kegalle","Nuwara Eliya":"Nuwara Eliya",
+    "Jaffna":"Jaffna","Vavuniya":"Vavuniya","Trincomalee":"Trincomalee",
+    "Batticaloa":"Batticaloa","Ampara":"Ampara","Hambantota":"Hambantota",
+    "Matale":"Matale",
+}
+
+DISTRICTS = set(CITY_TO_DISTRICT.values())
+
+def resolve_city_district(raw_location: str):
+    """Given a raw location string from ikman.lk, return (city, district)."""
+    loc = raw_location.strip()
+    if not loc:
+        return "", ""
+    # If it's a known district name directly — location IS the district
+    if loc in DISTRICTS:
+        return loc, loc  # city = district (no more specific data)
+    # If it's a known city/suburb name — look up its district
+    if loc in CITY_TO_DISTRICT:
+        return loc, CITY_TO_DISTRICT[loc]
+    # Fallback: treat as both city and district
+    return loc, loc
 
 # ikman.lk categories (slug, ad_type, max_pages)
 IKMAN_CATEGORIES = [
@@ -271,7 +330,20 @@ def scrape_ikman_category(session, slug: str, ad_type: str, max_pages: int) -> l
                 if m:
                     floor_area = safe_float(m.group(1))
 
-                location  = str(ad.get("location", "") or "")
+                # Extract location —try city-level fields first, fall back to district
+                raw_loc   = str(ad.get("location", "") or "")
+                # ikman.lk SERP JSON may have finer-grained location in these fields:
+                raw_city  = (str(ad.get("town", "") or "")
+                          or str(ad.get("localArea", "") or "")
+                          or str(ad.get("area", "") or "")
+                          or raw_loc)   # fallback to whatever location field we have
+
+                city, district = resolve_city_district(raw_city)
+                if not district and raw_loc:
+                    _, district = resolve_city_district(raw_loc)
+                    if not district:
+                        district = raw_loc
+
                 cat       = ad.get("category", {})
                 prop_type = cat.get("name", "") if isinstance(cat, dict) else str(cat)
                 slug_val  = str(ad.get("slug", "") or "")
@@ -292,8 +364,9 @@ def scrape_ikman_category(session, slug: str, ad_type: str, max_pages: int) -> l
                     "title":             str(ad.get("title", "") or ""),
                     "price_lkr":         price_lkr,
                     "price_raw":         price_raw,
-                    "location":          location,
-                    "district":          location,
+                    "city":              city,       # ← city/town (e.g. Dehiwala)
+                    "location":          district,   # district (e.g. Colombo) — model feature
+                    "district":          district,
                     "property_type":     prop_type,
                     "ad_type":           ad_type,
                     "bedrooms":          bedrooms,

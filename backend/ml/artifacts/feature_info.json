@@ -5,7 +5,9 @@
     "bedrooms",
     "bathrooms",
     "land_size_perches",
-    "is_for_rent"
+    "is_for_rent",
+    "quality_tier",
+    "is_furnished"
   ],
   "target": "price_lkr",
   "categorical_features": [
@@ -16,7 +18,9 @@
     "bedrooms",
     "bathrooms",
     "land_size_perches",
-    "is_for_rent"
+    "is_for_rent",
+    "quality_tier",
+    "is_furnished"
   ],
   "n_rows": 8814,
   "price_stats": {
@@ -31,25 +35,25 @@
     "Apartment": 1949
   },
   "location_counts": {
-    "Colombo": 5604,
-    "Gampaha": 1647,
-    "Kalutara": 570,
-    "Matara": 162,
-    "Kandy": 150,
-    "Hambantota": 135,
-    "Kurunegala": 134,
-    "Galle": 81,
-    "Anuradhapura": 62,
-    "Matale": 52,
-    "Kegalle": 44,
-    "Ratnapura": 32,
-    "Nuwara Eliya": 29,
-    "Jaffna": 29,
-    "Badulla": 27,
-    "Puttalam": 19,
-    "Monaragala": 14,
-    "Batticaloa": 7,
-    "Ampara": 5,
-    "Trincomalee": 5
+    "Colombo": 2258,
+    "Gampaha": 761,
+    "Athurugiriya": 354,
+    "Piliyandala": 312,
+    "Kalutara": 300,
+    "Rajagiriya": 229,
+    "Nugegoda": 201,
+    "Dehiwala": 197,
+    "Malabe": 194,
+    "Minuwangoda": 185,
+    "Kadawatha": 184,
+    "Thalawathugoda": 181,
+    "Homagama": 156,
+    "Kottawa": 151,
+    "Battaramulla": 150,
+    "Matara": 144,
+    "Negombo": 139,
+    "Kotte": 131,
+    "Hambantota": 131,
+    "Kandy": 129
   }
 }

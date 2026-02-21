@@ -6,8 +6,10 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/predict': 'http://localhost:8000',
-      '/health':  'http://localhost:8000',
+      '/predict':           'http://localhost:8000',
+      '/meta':              'http://localhost:8000',
+      '/forecast':          'http://localhost:8000',
+      '/health':            'http://localhost:8000',
     },
   },
 })

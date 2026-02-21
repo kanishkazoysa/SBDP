@@ -1,0 +1,23 @@
+{
+  "test_mae": 13633656.614852922,
+  "test_r2": 0.8303916840019633,
+  "n_train": 6477,
+  "n_test": 1389,
+  "n_districts": 23,
+  "year_range": "2018\u20132030",
+  "features": [
+    "year",
+    "month",
+    "location",
+    "property_type",
+    "bedrooms",
+    "bathrooms",
+    "land_size_perches",
+    "inflation_pct",
+    "lending_rate_pct",
+    "usd_lkr",
+    "gdp_growth_pct",
+    "policy_rate_pct",
+    "property_price_index"
+  ]
+}

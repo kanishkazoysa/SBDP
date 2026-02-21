@@ -1,8 +1,10 @@
 {
-  "Property Type": 0.8316691774111536,
-  "District / Location": 0.2551034316799748,
-  "Number of Bedrooms": 0.11225187098489448,
-  "Number of Bathrooms": 0.18285752054825563,
-  "Land Size (Perches)": 0.7862872093650439,
-  "Rental vs Sale": 0.0
+  "Property Type": 1.0218451787887461,
+  "District / Location": 0.35691089865972314,
+  "Number of Bedrooms": 0.16134770688682923,
+  "Number of Bathrooms": 0.12687429261983585,
+  "Land Size (Perches)": 0.5649439658856215,
+  "Rental vs Sale": 0.0,
+  "Quality Tier (Luxury)": 0.050231388118159734,
+  "Furnishing Status": 0.006628737562835696
 }

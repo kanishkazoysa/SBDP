@@ -58,8 +58,22 @@ type_map = {
 }
 df["property_type"] = df["property_type"].map(type_map).fillna("Other")
 
-# Location — use as-is (district level from ikman)
+# Location — use as-is (city-level from title extraction)
 df["location"] = df["location"].str.strip().fillna("Unknown")
+
+# Quality tier (0=Standard, 1=Modern, 2=Luxury, 3=Super Luxury)
+if "quality_tier" in df.columns:
+    df["quality_tier"] = pd.to_numeric(df["quality_tier"], errors="coerce").fillna(0).astype(int)
+    df["quality_tier"] = df["quality_tier"].clip(0, 3)
+else:
+    df["quality_tier"] = 0
+
+# Furnishing (0=Unknown, 1=Semi-Furnished, 2=Fully Furnished)
+if "is_furnished" in df.columns:
+    df["is_furnished"] = pd.to_numeric(df["is_furnished"], errors="coerce").fillna(0).astype(int)
+    df["is_furnished"] = df["is_furnished"].clip(0, 2)
+else:
+    df["is_furnished"] = 0
 
 # Numeric features
 df["bedrooms"]          = pd.to_numeric(df["bedrooms"],          errors="coerce")
@@ -82,11 +96,13 @@ df["log_price"] = np.log1p(df["price_lkr"])
 # ── 4. Select final feature columns ───────────────────────────────────────────
 FEATURES = [
     "property_type",       # categorical
-    "location",            # categorical (district)
+    "location",            # categorical (city/district)
     "bedrooms",            # numeric, may be NaN for land
     "bathrooms",           # numeric, may be NaN for land
     "land_size_perches",   # numeric, may be NaN for houses/apts
     "is_for_rent",         # binary
+    "quality_tier",        # ordinal: 0=Standard,1=Modern,2=Luxury,3=Super Luxury
+    "is_furnished",        # ordinal: 0=Unknown,1=Semi,2=Fully Furnished
 ]
 TARGET = "price_lkr"
 
@@ -107,7 +123,8 @@ info = {
     "features": FEATURES,
     "target": TARGET,
     "categorical_features": ["property_type", "location"],
-    "numeric_features":     ["bedrooms", "bathrooms", "land_size_perches", "is_for_rent"],
+    "numeric_features":     ["bedrooms", "bathrooms", "land_size_perches",
+                             "is_for_rent", "quality_tier", "is_furnished"],
     "n_rows": len(df_out),
     "price_stats": {
         "min":    float(df_out[TARGET].min()),

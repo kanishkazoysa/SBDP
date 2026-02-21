@@ -41,7 +41,7 @@ import lightgbm as lgb
 
 ARTIFACT_DIR = Path(__file__).parent / "artifacts"
 FIGURE_DIR   = Path(__file__).parent / "figures"
-RAW_CSV      = Path(__file__).parent.parent / "dataset" / "properties_raw.csv"
+RAW_CSV      = Path(__file__).parent.parent.parent / "dataset" / "properties_raw.csv"
 ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
 FIGURE_DIR.mkdir(parents=True, exist_ok=True)
 

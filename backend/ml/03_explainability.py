@@ -38,7 +38,7 @@ with open(ARTIFACT_DIR / "label_encoders.pkl", "rb") as f:
 df = pd.read_csv(PROCESSED)
 
 FEATURES = ["property_type", "location", "bedrooms", "bathrooms",
-            "land_size_perches", "is_for_rent"]
+            "land_size_perches", "is_for_rent", "quality_tier", "is_furnished"]
 
 X = df[FEATURES].copy()
 for col, le in encoders.items():
@@ -65,6 +65,8 @@ feature_labels = {
     "bathrooms":         "Number of Bathrooms",
     "land_size_perches": "Land Size (Perches)",
     "is_for_rent":       "Rental vs Sale",
+    "quality_tier":      "Quality Tier (Luxury)",
+    "is_furnished":      "Furnishing Status",
 }
 display_names = [feature_labels.get(f, f) for f in FEATURES]
 
