@@ -1,17 +1,16 @@
+import { Paper, Title, Text } from '@mantine/core'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ReferenceLine, Cell, ResponsiveContainer,
 } from 'recharts'
 
-const PRED_COLORS = ['#27ae60', '#e67e22', '#c0392b']
-
-export default function ShapChart({ shapValues, featureNames, prediction, predIdx }) {
-  // Build sorted data: top 10 by |SHAP|
+export default function ShapChart({ shapValues, featureNames, prediction }) {
+  // Top 10 features by absolute SHAP value, largest at top
   const data = featureNames
     .map((name, i) => ({ name, value: shapValues[i] }))
     .sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
     .slice(0, 10)
-    .reverse()   // largest at top in horizontal chart
+    .reverse()
 
   const maxAbs = Math.max(...data.map(d => Math.abs(d.value)), 0.1)
 
@@ -19,71 +18,87 @@ export default function ShapChart({ shapValues, featureNames, prediction, predId
     if (!active || !payload?.length) return null
     const { name, value } = payload[0].payload
     return (
-      <div style={{
-        background: 'white', border: '1px solid #dde1e7',
-        borderRadius: 7, padding: '8px 12px', fontSize: '0.83rem',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-      }}>
-        <strong>{name}</strong>
-        <br />
-        <span style={{ color: value >= 0 ? '#c0392b' : '#2980b9' }}>
+      <div className="shap-tooltip">
+        <div style={{ fontWeight: 600, fontSize: '0.84rem', marginBottom: 4, color: '#e8eaf2' }}>
+          {name}
+        </div>
+        <div style={{ fontSize: '0.8rem', color: value >= 0 ? '#f87171' : '#60a5fa' }}>
           SHAP: {value >= 0 ? '+' : ''}{value.toFixed(4)}
-        </span>
-        <br />
-        <span style={{ color: '#718096', fontSize: '0.78rem' }}>
+        </div>
+        <div style={{ fontSize: '0.75rem', color: '#6b7a99', marginTop: 3 }}>
           {value >= 0 ? 'Increases delay probability' : 'Decreases delay probability'}
-        </span>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="card">
-      <h2 className="card-title">Why did the model predict this? (SHAP)</h2>
-      <p style={{ fontSize: '0.83rem', color: 'var(--text-muted)', marginBottom: 16 }}>
-        <span style={{ color: '#c0392b', fontWeight: 600 }}>Red bars</span> push toward a{' '}
-        <em>higher delay</em> class.{' '}
-        <span style={{ color: '#2980b9', fontWeight: 600 }}>Blue bars</span> push toward{' '}
-        <em>on time</em>.
-        Showing top 10 features by influence for the <strong>{prediction}</strong> prediction.
-      </p>
+    // Paper fills the full flex column of panel-right
+    <Paper
+      withBorder
+      p="xl"
+      radius="md"
+      style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}
+    >
+      <Title order={4} mb={4}>Model Explanation (SHAP)</Title>
+      <Text size="xs" c="dimmed" mb="md">
+        Top 10 features for the{' '}
+        <Text component="span" fw={600} c="dark.0">{prediction}</Text>{' '}
+        prediction.{' '}
+        <Text component="span" c="red.4">Red</Text> = increases delay,{' '}
+        <Text component="span" c="blue.4">blue</Text> = decreases it.
+      </Text>
 
-      <ResponsiveContainer width="100%" height={320}>
-        <BarChart
-          data={data}
-          layout="vertical"
-          margin={{ top: 4, right: 24, left: 8, bottom: 4 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-          <XAxis
-            type="number"
-            domain={[-maxAbs * 1.15, maxAbs * 1.15]}
-            tickFormatter={v => v.toFixed(2)}
-            tick={{ fontSize: 11 }}
-          />
-          <YAxis
-            type="category"
-            dataKey="name"
-            width={165}
-            tick={{ fontSize: 11 }}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <ReferenceLine x={0} stroke="#aaa" strokeWidth={1.5} />
-          <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-            {data.map((entry, i) => (
-              <Cell
-                key={i}
-                fill={entry.value >= 0 ? '#e74c3c' : '#3498db'}
-                fillOpacity={0.85}
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      {/* Chart fills remaining vertical space */}
+      <div style={{ flex: 1, minHeight: 260 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={data}
+            layout="vertical"
+            margin={{ top: 0, right: 20, left: 12, bottom: 0 }}
+          >
+            <CartesianGrid
+              strokeDasharray="3 3"
+              horizontal={false}
+              stroke="rgba(255,255,255,0.05)"
+            />
+            <XAxis
+              type="number"
+              domain={[-maxAbs * 1.15, maxAbs * 1.15]}
+              tickFormatter={v => v.toFixed(2)}
+              tick={{ fontSize: 11, fill: '#4a5578' }}
+              axisLine={{ stroke: 'rgba(255,255,255,0.07)' }}
+              tickLine={{ stroke: 'rgba(255,255,255,0.07)' }}
+            />
+            <YAxis
+              type="category"
+              dataKey="name"
+              width={160}
+              tick={{ fontSize: 11, fill: '#6b7a99' }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+            />
+            <ReferenceLine x={0} stroke="rgba(255,255,255,0.1)" strokeWidth={1.5} />
+            <Bar dataKey="value" radius={[0, 3, 3, 0]}>
+              {data.map((entry, i) => (
+                <Cell
+                  key={i}
+                  fill={entry.value >= 0 ? '#f87171' : '#60a5fa'}
+                  fillOpacity={0.88}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
-      <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 10, textAlign: 'center' }}>
-        SHAP (SHapley Additive exPlanations) — TreeExplainer on LightGBM model
-      </p>
-    </div>
+      <Text size="xs" c="dimmed" mt="sm" ta="center">
+        SHAP TreeExplainer — LightGBM multiclass model
+      </Text>
+    </Paper>
   )
 }

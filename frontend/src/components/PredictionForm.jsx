@@ -1,12 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import {
+  Paper, Title, Text, Select, Grid, Button, Slider,
+  Badge, Stack, Group, Box, Divider,
+} from '@mantine/core'
+import {
+  MapPin, Bus, CloudRain, CalendarDays, Clock,
+  Users, AlarmClock, Moon, Flag, Sparkles, Coffee,
+  Navigation, Zap,
+} from 'lucide-react'
 
-// ── Reference data (mirrors backend/main.py) ─────────────────────────────────
+// ── Reference data ────────────────────────────────────────────────────────────
 const ROUTES = {
-  '01':   { label: 'Colombo → Kandy (Route 01, 116 km)',      distance: 116, duration: { Normal: 210, 'Semi Luxury': 185, Luxury: 165 } },
-  '32':   { label: 'Colombo → Galle (Route 32, 119 km)',      distance: 119, duration: { Normal: 195, 'Semi Luxury': 170, Luxury: 150 } },
-  '04':   { label: 'Colombo → Kurunegala (Route 04, 94 km)',  distance: 94,  duration: { Normal: 150, 'Semi Luxury': 130, Luxury: 110 } },
-  '04-2': { label: 'Colombo → Negombo (Route 04-2, 37 km)',   distance: 37,  duration: { Normal: 75,  'Semi Luxury': 65,  Luxury: 55  } },
-  '98':   { label: 'Colombo → Ratnapura (Route 98, 100 km)',  distance: 100, duration: { Normal: 180, 'Semi Luxury': 160, Luxury: 140 } },
+  '01':   { label: 'Route 01 — Colombo → Kandy (116 km)',      distance: 116, duration: { Normal: 210, 'Semi Luxury': 185, Luxury: 165 } },
+  '32':   { label: 'Route 32 — Colombo → Galle (119 km)',      distance: 119, duration: { Normal: 195, 'Semi Luxury': 170, Luxury: 150 } },
+  '04':   { label: 'Route 04 — Colombo → Kurunegala (94 km)',  distance: 94,  duration: { Normal: 150, 'Semi Luxury': 130, Luxury: 110 } },
+  '04-2': { label: 'Route 04-2 — Colombo → Negombo (37 km)',   distance: 37,  duration: { Normal: 75,  'Semi Luxury': 65,  Luxury: 55  } },
+  '98':   { label: 'Route 98 — Colombo → Ratnapura (100 km)',  distance: 100, duration: { Normal: 180, 'Semi Luxury': 160, Luxury: 140 } },
 }
 
 const POYA_DAYS = new Set([
@@ -59,139 +68,213 @@ export default function PredictionForm({ onPredict, loading }) {
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }))
 
   // Auto-computed flags
-  const d          = form.departure_date
-  const dow        = new Date(d).getDay()                  // 0=Sun
-  const isWeekend  = dow === 0 || dow === 6
-  const isPoya     = POYA_DAYS.has(d)
-  const isHoliday  = PUBLIC_HOLIDAYS.has(d)
-  const festival   = getFestival(d)
+  const d         = form.departure_date
+  const dow       = new Date(d).getDay()
+  const isWeekend = dow === 0 || dow === 6
+  const isPoya    = POYA_DAYS.has(d)
+  const isHoliday = PUBLIC_HOLIDAYS.has(d)
+  const festival  = getFestival(d)
 
-  const routeInfo     = ROUTES[form.route_no]
-  const schedMins     = routeInfo.duration[form.bus_type]
-  const schedH        = Math.floor(schedMins / 60)
-  const schedM        = schedMins % 60
+  const routeInfo = ROUTES[form.route_no]
+  const schedMins = routeInfo.duration[form.bus_type]
+  const schedH    = Math.floor(schedMins / 60)
+  const schedM    = schedMins % 60
 
   const handleSubmit = (e) => {
     e.preventDefault()
     onPredict({ ...form, departure_delay_min: Number(form.departure_delay_min) })
   }
 
+  const routeData   = Object.entries(ROUTES).map(([no, r]) => ({ value: no, label: r.label }))
+  const busTypes    = ['Normal', 'Semi Luxury', 'Luxury'].map(v => ({ value: v, label: v }))
+  const weatherOpts = ['Clear', 'Cloudy', 'Light Rain', 'Moderate Rain', 'Heavy Rain'].map(v => ({ value: v, label: v }))
+  const crowdOpts   = ['Low', 'Medium', 'High'].map(v => ({ value: v, label: v }))
+
+  const flags = [
+    { active: isWeekend,  Icon: Coffee,   label: isWeekend  ? 'Weekend'        : 'Weekday'    },
+    { active: isPoya,     Icon: Moon,     label: isPoya     ? 'Poya Day'       : 'No Poya'    },
+    { active: isHoliday,  Icon: Flag,     label: isHoliday  ? 'Public Holiday' : 'No Holiday' },
+    { active: !!festival, Icon: Sparkles, label: festival   || 'No Festival'                  },
+  ]
+
   return (
-    <form className="card" onSubmit={handleSubmit}>
-      <h2 className="card-title">Trip Details</h2>
+    <Paper
+      component="form"
+      onSubmit={handleSubmit}
+      withBorder
+      p="xl"
+      radius="md"
+      style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
+    >
+      <Title order={4} mb="xl">Trip Details</Title>
 
-      <div className="form-grid">
+      <Stack gap="lg" style={{ flex: 1 }}>
         {/* Route */}
-        <div className="form-group full">
-          <label>Route</label>
-          <select value={form.route_no} onChange={e => set('route_no', e.target.value)}>
-            {Object.entries(ROUTES).map(([no, r]) => (
-              <option key={no} value={no}>{r.label}</option>
-            ))}
-          </select>
-        </div>
+        <Select
+          label="Route"
+          leftSection={<MapPin size={15} />}
+          leftSectionPointerEvents="none"
+          data={routeData}
+          value={form.route_no}
+          onChange={val => val && set('route_no', val)}
+          allowDeselect={false}
+        />
 
-        {/* Bus type */}
-        <div className="form-group">
-          <label>Bus Type</label>
-          <select value={form.bus_type} onChange={e => set('bus_type', e.target.value)}>
-            <option>Normal</option>
-            <option>Semi Luxury</option>
-            <option>Luxury</option>
-          </select>
-        </div>
+        {/* Bus Type + Weather */}
+        <Grid gutter="md">
+          <Grid.Col span={{ base: 12, xs: 6 }}>
+            <Select
+              label="Bus Type"
+              leftSection={<Bus size={15} />}
+              leftSectionPointerEvents="none"
+              data={busTypes}
+              value={form.bus_type}
+              onChange={val => val && set('bus_type', val)}
+              allowDeselect={false}
+            />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, xs: 6 }}>
+            <Select
+              label="Weather"
+              leftSection={<CloudRain size={15} />}
+              leftSectionPointerEvents="none"
+              data={weatherOpts}
+              value={form.weather}
+              onChange={val => val && set('weather', val)}
+              allowDeselect={false}
+            />
+          </Grid.Col>
+        </Grid>
 
-        {/* Weather */}
-        <div className="form-group">
-          <label>Weather Condition</label>
-          <select value={form.weather} onChange={e => set('weather', e.target.value)}>
-            <option>Clear</option>
-            <option>Cloudy</option>
-            <option>Light Rain</option>
-            <option>Moderate Rain</option>
-            <option>Heavy Rain</option>
-          </select>
-        </div>
-
-        {/* Date */}
-        <div className="form-group">
-          <label>Travel Date</label>
-          <input
-            type="date"
-            value={form.departure_date}
-            min="2024-01-01"
-            max="2026-12-31"
-            onChange={e => set('departure_date', e.target.value)}
-          />
-        </div>
-
-        {/* Time */}
-        <div className="form-group">
-          <label>Departure Time</label>
-          <input
-            type="time"
-            value={form.departure_time}
-            onChange={e => set('departure_time', e.target.value)}
-          />
-        </div>
+        {/* Date + Time */}
+        <Grid gutter="md">
+          <Grid.Col span={{ base: 12, xs: 6 }}>
+            <label className="native-label">
+              <CalendarDays size={14} /> Travel Date
+            </label>
+            <input
+              type="date"
+              className="native-input"
+              value={form.departure_date}
+              min="2024-01-01"
+              max="2026-12-31"
+              onChange={e => set('departure_date', e.target.value)}
+            />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, xs: 6 }}>
+            <label className="native-label">
+              <Clock size={14} /> Departure Time
+            </label>
+            <input
+              type="time"
+              className="native-input"
+              value={form.departure_time}
+              onChange={e => set('departure_time', e.target.value)}
+            />
+          </Grid.Col>
+        </Grid>
 
         {/* Crowding */}
-        <div className="form-group full">
-          <label>Expected Crowding</label>
-          <select value={form.crowding_level} onChange={e => set('crowding_level', e.target.value)}>
-            <option>Low</option>
-            <option>Medium</option>
-            <option>High</option>
-          </select>
-        </div>
+        <Select
+          label="Expected Crowding"
+          leftSection={<Users size={15} />}
+          leftSectionPointerEvents="none"
+          data={crowdOpts}
+          value={form.crowding_level}
+          onChange={val => val && set('crowding_level', val)}
+          allowDeselect={false}
+        />
 
-        {/* Departure delay */}
-        <div className="form-group full">
-          <label>Departure Delay (min) — set 0 if bus has not left yet</label>
-          <div className="slider-row">
-            <input
-              type="range"
-              min={0} max={60} step={1}
-              value={form.departure_delay_min}
-              onChange={e => set('departure_delay_min', e.target.value)}
-            />
-            <span className="slider-val">{form.departure_delay_min}m</span>
+        {/* Departure delay slider */}
+        <Box>
+          <Group justify="space-between" mb={6}>
+            <label className="native-label" style={{ margin: 0 }}>
+              <AlarmClock size={14} /> Departure Delay
+            </label>
+            <Text
+              size="sm"
+              fw={600}
+              c={form.departure_delay_min > 0 ? 'orange.4' : 'dimmed'}
+            >
+              {form.departure_delay_min > 0
+                ? `+${form.departure_delay_min} min late`
+                : 'On time'}
+            </Text>
+          </Group>
+          <Slider
+            min={0}
+            max={60}
+            step={1}
+            value={Number(form.departure_delay_min)}
+            onChange={val => set('departure_delay_min', val)}
+            label={val => `${val} min`}
+            marks={[
+              { value: 0,  label: '0'   },
+              { value: 20, label: '20m' },
+              { value: 40, label: '40m' },
+              { value: 60, label: '60m' },
+            ]}
+            mb="lg"
+          />
+        </Box>
+
+        <Divider my="md" />
+
+        {/* Auto-detected flags */}
+        <Box>
+          <Text
+            size="xs"
+            c="dimmed"
+            tt="uppercase"
+            fw={600}
+            mb="md"
+            style={{ letterSpacing: '0.6px' }}
+          >
+            Auto-detected from date
+          </Text>
+
+          {/* 2×2 badge grid */}
+          <Grid gutter="sm">
+            {flags.map(({ active, Icon, label }) => (
+              <Grid.Col key={label} span={6}>
+                <Badge
+                  variant={active ? 'light' : 'outline'}
+                  color={active ? 'indigo' : 'gray'}
+                  leftSection={<Icon size={12} />}
+                  size="md"
+                  radius="sm"
+                  fullWidth
+                  style={{ cursor: 'default', fontWeight: 500, justifyContent: 'flex-start', padding: '8px 12px', height: 'auto' }}
+                >
+                  {label}
+                </Badge>
+              </Grid.Col>
+            ))}
+          </Grid>
+
+          <div className="journey-pill" style={{ marginTop: 14 }}>
+            <Navigation size={14} style={{ flexShrink: 0, color: '#6366f1' }} />
+            <Text size="sm">
+              Scheduled:{' '}
+              <Text component="span" fw={700} c="dark.0">
+                {schedH}h{schedM > 0 ? ` ${schedM}min` : ''}
+              </Text>
+              {' '}· {routeInfo.distance} km
+            </Text>
           </div>
-        </div>
-      </div>
+        </Box>
+      </Stack>
 
-      {/* Auto-detected flags */}
-      <div style={{ marginTop: 18 }}>
-        <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: 8 }}>
-          Auto-Detected (from date)
-        </p>
-        <div className="info-grid">
-          <span className={`badge ${isWeekend ? 'badge-yes' : 'badge-no'}`}>
-            <span className="badge-icon">{isWeekend ? '🏖️' : '📅'}</span>
-            {isWeekend ? 'Weekend' : 'Weekday'}
-          </span>
-          <span className={`badge ${isPoya ? 'badge-yes' : 'badge-no'}`}>
-            <span className="badge-icon">{isPoya ? '🌕' : '🌑'}</span>
-            {isPoya ? 'Poya Day' : 'Not Poya'}
-          </span>
-          <span className={`badge ${isHoliday ? 'badge-yes' : 'badge-no'}`}>
-            <span className="badge-icon">{isHoliday ? '🎉' : '🗓️'}</span>
-            {isHoliday ? 'Public Holiday' : 'No Holiday'}
-          </span>
-          <span className={`badge ${festival ? 'badge-yes' : 'badge-no'}`}>
-            <span className="badge-icon">{festival ? '🎊' : '📆'}</span>
-            {festival || 'No Festival'}
-          </span>
-        </div>
-        <div className="journey-info">
-          Scheduled journey: <strong>{schedH}h {schedM > 0 ? `${schedM}min` : ''}</strong>
-          &nbsp;({routeInfo.distance} km)
-        </div>
-      </div>
-
-      <button className="btn-predict" type="submit" disabled={loading}>
-        {loading ? <><span className="spinner" />Predicting...</> : 'Predict Delay'}
-      </button>
-    </form>
+      <Button
+        type="submit"
+        fullWidth
+        size="md"
+        mt="xl"
+        loading={loading}
+        leftSection={loading ? null : <Zap size={16} />}
+      >
+        Predict Delay
+      </Button>
+    </Paper>
   )
 }
