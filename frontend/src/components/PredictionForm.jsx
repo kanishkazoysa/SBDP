@@ -35,7 +35,6 @@ export default function PredictionForm({ onPredict, loading, meta }) {
     bedrooms: 3,
     bathrooms: 2,
     land_size_perches: null,
-    is_for_rent: 0,
     quality_tier: 0,   // NEW
     is_furnished: 0,   // NEW
   })
@@ -60,7 +59,6 @@ export default function PredictionForm({ onPredict, loading, meta }) {
       bedrooms: isHouseOrApt ? form.bedrooms : null,
       bathrooms: isHouseOrApt ? form.bathrooms : null,
       land_size_perches: form.land_size_perches,
-      is_for_rent: form.is_for_rent,
       quality_tier: form.quality_tier,
       is_furnished: form.is_furnished,
     }
@@ -77,20 +75,6 @@ export default function PredictionForm({ onPredict, loading, meta }) {
       <Title order={4} mb="xl">Property Details</Title>
 
       <Stack gap="lg" style={{ flex: 1 }}>
-
-        {/* Sale vs Rent */}
-        <Box>
-          <Text size="sm" fw={500} mb={6} c="dimmed">Listing Type</Text>
-          <SegmentedControl
-            fullWidth
-            value={String(form.is_for_rent)}
-            onChange={val => set('is_for_rent', Number(val))}
-            data={[
-              { label: 'For Sale', value: '0' },
-              { label: 'For Rent', value: '1' },
-            ]}
-          />
-        </Box>
 
         {/* Property Type */}
         <Box>

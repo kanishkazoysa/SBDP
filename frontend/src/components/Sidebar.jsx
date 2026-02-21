@@ -1,37 +1,13 @@
-import { Text, ThemeIcon, Divider, Stack, Box } from '@mantine/core'
-import { Home, BarChart2, MapPin, Info, Cpu, Database } from 'lucide-react'
+import { Text, Stack, Box } from '@mantine/core'
+import { BarChart2 } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { Icon: BarChart2, label: 'Predict',    sub: 'Price forecast',      active: true  },
-  { Icon: MapPin,    label: 'Districts',  sub: 'All Sri Lanka',        active: false },
-  { Icon: Info,      label: 'About',      sub: 'Model & data',         active: false },
+  { Icon: BarChart2, label: 'Valuation', sub: 'Price predictor', active: true },
 ]
 
-export default function Sidebar({ meta }) {
-  const r2  = meta?.metrics?.R2   ? `${(meta.metrics.R2 * 100).toFixed(1)}%` : '81.6%'
-  const n   = meta?.dataset_size  ? meta.dataset_size.toLocaleString()        : '8,791'
-
-  const STATS = [
-    { Icon: Cpu,      label: 'Algorithm', value: 'LightGBM v4' },
-    { Icon: Database, label: 'Listings',  value: `${n} rows`   },
-    { Icon: BarChart2,label: 'R² Score',  value: r2            },
-  ]
-
+export default function Sidebar() {
   return (
     <aside className="sidebar">
-
-      {/* Brand */}
-      <div className="sidebar-brand">
-        <ThemeIcon variant="light" color="indigo" size={40} radius="md">
-          <Home size={20} />
-        </ThemeIcon>
-        <div>
-          <Text size="sm" fw={700} c="white" lh={1.2}>SLPPP</Text>
-          <Text size="xs" c="dimmed" lh={1.1}>Price Predictor</Text>
-        </div>
-      </div>
-
-      <Divider />
 
       {/* Navigation */}
       <Stack gap={4} className="sidebar-nav">
@@ -49,28 +25,12 @@ export default function Sidebar({ meta }) {
         ))}
       </Stack>
 
-      <Divider />
-
-      {/* Model stats */}
-      <Stack gap={4} className="sidebar-nav">
-        <Text size="xs" c="dimmed" tt="uppercase" fw={600} mb={6} style={{ letterSpacing: '0.55px' }}>
-          Model
-        </Text>
-        {STATS.map(({ Icon, label, value }) => (
-          <div key={label} className="sidebar-stat">
-            <Icon size={13} style={{ flexShrink: 0, color: '#6366f1' }} />
-            <div style={{ minWidth: 0 }}>
-              <Text size="xs" c="dimmed" lh={1.1}>{label}</Text>
-              <Text size="xs" fw={600} c="dark.0" lh={1.2}>{value}</Text>
-            </div>
-          </div>
-        ))}
-      </Stack>
+      <Box style={{ flex: 1 }} />
 
       {/* Footer */}
       <Box className="sidebar-footer">
-        <Text size="xs" c="dimmed">Sri Lanka · ikman.lk</Text>
-        <Text size="xs" c="dimmed" mt={2}>SHAP · LightGBM</Text>
+        <Text size="xs" c="dimmed">Sri Lanka Real Estate</Text>
+        <Text size="xs" c="dimmed" mt={2}>Property Valuation v1.0</Text>
       </Box>
 
     </aside>

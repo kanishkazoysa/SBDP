@@ -45,7 +45,7 @@ html, body { margin: 0; padding: 0; }
 
 /* ── Left column: tab switcher + form ───────────────────────────────────── */
 .left-col {
-  flex: 0 0 460px;
+  flex: 0 0 540px;
   display: flex;
   flex-direction: column;
 }

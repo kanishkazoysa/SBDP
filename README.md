@@ -1,133 +1,99 @@
-# Sri Lanka Intercity Bus Delay Prediction
+# Sri Lanka Property Price Predictor & Forecaster
 
-> Machine Learning Assignment — LightGBM + SHAP + React Frontend
+> **Machine Learning Assignment** — LightGBM Regression + SHAP Explainability + Economic Forecasting + React Frontend
 
-Predicts whether an SLTB / private bus on major Colombo intercity routes will arrive
-**On Time**, **Slightly Delayed** (11–30 min), or **Heavily Delayed** (>30 min).
+A comprehensive machine learning application designed to estimate current property values and forecast future price trends in Sri Lanka (2026–2030) using real-world real estate data.
 
 ---
 
-## Project Structure
+## 🏗️ Project Structure
 
+```text
+├── dataset/
+│   ├── scrape_properties.py    # Multi-source web scraper (ikman.lk, LankaPropertyWeb)
+│   └── properties_raw.csv      # Raw dataset (9,022 listings)
+├── backend/
+│   ├── main.py                 # FastAPI REST API (Predict & Forecast endpoints)
+│   ├── requirements.txt        # Backend dependencies
+│   ├── ml/                     # Machine Learning Pipeline
+│   │   ├── 01_preprocessing.py # Data cleaning, City extraction, Quality tiering
+│   │   ├── 02_train_evaluate.py# LightGBM training + Performance metrics
+│   │   ├── 03_explainability.py# XAI: SHAP values & Feature importance
+│   │   ├── 05_train_forecast.py# LSTM/Proph-style future price trend modeling
+│   │   ├── artifacts/          # Trained models, encoders, and metrics JSON
+│   │   └── figures/            # Training plots (Actual vs Pred, SHAP Beeswarm, etc.)
+├── frontend/
+│   ├── src/                    # React 18 + Mantine UI
+│   │   ├── App.jsx             # Main logic + Tabbed Forecast auto-fill system
+│   │   └── components/         # Modular UI (ShapChart, ForecastPlot, etc.)
+│   └── package.json            # Frontend dependencies
+└── docker-compose.yml          # Container orchestration for easy deployment
 ```
-├── dataset/                  Raw dataset (500 records, 2024)
-├── ml/                       Machine learning pipeline
-│   ├── 01_preprocessing.py   EDA + feature encoding + train/val/test split
-│   ├── 02_train_evaluate.py  LightGBM training, GridSearchCV, evaluation
-│   ├── 03_explainability.py  SHAP, LIME, and Partial Dependence Plots
-│   ├── figures/              20 saved plots (EDA, model, XAI)
-│   └── requirements.txt
-├── backend/                  FastAPI REST API
-│   ├── main.py               POST /predict endpoint
-│   ├── artifacts/            Trained model + preprocessed data
-│   └── requirements.txt
-└── frontend/                 React (Vite) web application
-    ├── src/
-    │   ├── App.jsx
-    │   └── components/
-    │       ├── PredictionForm.jsx
-    │       ├── PredictionResult.jsx
-    │       └── ShapChart.jsx
-    └── package.json
-```
 
 ---
 
-## Dataset
+## 📊 Dataset & Feature Engineering
 
-| Property | Value |
-|---|---|
-| Records | 500 bus trips |
-| Routes | Colombo→Kandy (01), Galle (32), Kurunegala (04), Negombo (04-2), Ratnapura (98) |
-| Period | Full year 2024 |
-| Features | 25 columns (16 used as model inputs) |
-| Target | `delay_category` — On Time / Slightly Delayed / Heavily Delayed |
+The model is trained on **9,022 listings** scraped from major Sri Lankan property portals.
 
-**Data sources:**
-- Route distances & numbers: [NTC Sri Lanka](https://ntc.gov.lk) / bustimetable.lk
-- 2024 Public holidays & Poya days: publicholidays.lk + Sri Lanka government calendar
-- Monsoon weather patterns: Sri Lanka Meteorological Department
-- Trip records: Google Form survey shared with regular commuters
-
-**Key Sri Lankan features:** Poya days, Kandy Perahera season, SW monsoon (May–Sep
-heavily affects Galle/Ratnapura routes), inter-monsoon thunderstorms (Mar–Apr, Oct–Nov).
+| Feature Type       | Details                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------ |
+| **Location**       | City-level granularity (**129 unique locations**) extracted from listing titles.     |
+| **Property Type**  | Land, House, Apartment.                                                              |
+| **Specifications** | Bedrooms, Bathrooms, Land Size (Perches).                                            |
+| **Quality Tier**   | **New Feature**: Classifies listings into Standard, Modern, Luxury, or Super Luxury. |
+| **Furnishing**     | Detects Unfurnished, Semi-Furnished, or Fully Furnished status.                      |
 
 ---
 
-## Algorithm — LightGBM
+## 🤖 Algorithm — LightGBM
 
-**Why LightGBM (not a standard lecture algorithm)?**
+The core predictor uses **LightGBM**, a high-performance gradient boosting framework.
 
-| Standard Algorithms | LightGBM Difference |
-|---|---|
-| Decision Tree — level-wise growth | **Leaf-wise growth** — splits the leaf with highest loss gain, producing deeper, more accurate trees |
-| Standard GBDT — uses all data | **GOSS** (Gradient-based One-Side Sampling) — drops low-gradient instances, reducing computation |
-| Dense feature matrices | **EFB** (Exclusive Feature Bundling) — bundles mutually exclusive sparse features, reducing dimensionality |
-| Slow for large datasets | Histogram-based splitting — 10–100× faster than exact GBDT |
+**Why LightGBM?**
 
----
+- **Categorical Handling:** Efficiently manages 129+ location categories without one-hot encoding.
+- **Speed:** 10–100x faster training than standard GBDT on tabular data.
+- **Accuracy:** Leaf-wise growth allows for higher precision in complex real estate price distributions.
 
-## Model Results
+### Model Performance (Current Version)
 
-| Metric | Validation | Test |
-|---|---|---|
-| Accuracy | 81.3% | 81.3% |
-| F1-score (macro) | 0.791 | 0.803 |
-| F1-score (weighted) | 0.811 | 0.815 |
-| AUC-ROC (macro OvR) | 0.895 | 0.916 |
-
-**Best hyperparameters** (GridSearchCV, 5-fold, F1-macro):
-`num_leaves=31`, `learning_rate=0.05`, `n_estimators=97` (early stopped), `min_child_samples=20`
-
-**Top features by SHAP importance:**
-1. Crowding Level
-2. Is Festival Period
-3. Departure Delay (min)
-4. Weather
-5. Departure Hour
+- **Test R² (log-space):** 0.8492
+- **Test MAE:** Rs. 11,592,928
+- **Validation R²:** 0.8530
 
 ---
 
-## Explainability Methods
+## 🔮 Future Forecasting (2026–2030)
 
-| Method | What it shows |
-|---|---|
-| **SHAP TreeExplainer** | Global feature importance (beeswarm, bar), per-prediction waterfall, dependence plots |
-| **LIME** | Local linear approximation explaining a single "Heavily Delayed" prediction |
-| **PDP** | How departure delay, weather, and festival period independently affect P(Heavily Delayed) |
+The application includes an economics-aware forecasting engine that uses historical property trends combined with microeconomic signals to predict market shifts over the next 5 years.
 
----
+**Features:**
 
-## Critical Discussion
-
-### Limitations
-- **Dataset size:** 500 records is small; a production system would need thousands of real GPS-tracked trips.
-- **Survey bias:** Trip records from Google Form reflect respondents who bothered to fill it in — likely passengers who experienced notable delays.
-- **No real-time inputs:** Weather and crowding are self-reported; a real deployment would integrate live weather APIs and passenger count sensors.
-- **Route coverage:** Only 5 Colombo-origin routes; inter-provincial and rural routes are excluded.
-
-### Data Quality
-- Holiday/festival flags are binary; they don't capture the *magnitude* of the event (e.g., first day of New Year vs. mid-week during the season).
-- Crowding level is subjective (survey respondent's perception), not a measured value.
-
-### Bias & Fairness
-- Routes to tourist-heavy destinations (Kandy, Galle) may appear more reliable because survey respondents on those routes skewed toward luxury bus users.
-- Seasonal imbalance: more records exist for April–May (festival months) due to weighted sampling.
-
-### Ethical Considerations
-- No personal data is collected or stored; all trip records are anonymised at collection.
-- A deployed delay predictor could inadvertently disadvantage certain communities if it under-predicts delays on rural routes with sparse data.
-- The model should be presented as an *estimate*, not a guarantee, to avoid passenger decisions based on false certainty.
+- Automatic Investment Signal (Strong Buy, Hold, Sell).
+- Regional Growth Analysis (District-specific multipliers).
+- Integrated UX: Predict a current price and immediately switch to the Forecast tab to see its 5-year outlook auto-populated.
 
 ---
 
-## Setup & Running
+## 🔍 Explainability (XAI)
 
-### 1. ML Pipeline (generate figures + artifacts)
+Every prediction is backed by **SHAP (SHapley Additive exPlanations)**.
+
+- **SHAP Bar Charts:** Shows the global importance of features (Property Type is rank #1).
+- **Individual Waterfall:** Explains exactly why a specific property was priced the way it was (e.g., "This property is Rs 2M higher because it is in Nugegoda").
+
+---
+
+## 🛠️ Setup & Execution
+
+### 1. ML Pipeline
+
+Generate models and artifacts:
 
 ```bash
-cd ml
-pip install -r requirements.txt
+cd backend/ml
+pip install -r ../requirements.txt
 python 01_preprocessing.py
 python 02_train_evaluate.py
 python 03_explainability.py
@@ -137,30 +103,22 @@ python 03_explainability.py
 
 ```bash
 cd backend
-pip install -r requirements.txt
-uvicorn main:app --reload
-# API running at http://localhost:8000
+uvicorn main:app --reload --port 8000
 ```
 
-### 3. Frontend (React)
+### 3. Frontend (Vite + React)
 
 ```bash
 cd frontend
 npm install
 npm run dev
-# App running at http://localhost:5173
 ```
-
-Both backend and frontend must be running simultaneously for the app to work.
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-| Layer | Technology |
-|---|---|
-| ML Model | LightGBM 4.x |
-| XAI | SHAP, LIME, scikit-learn PDP |
-| Backend API | FastAPI + Uvicorn |
-| Frontend | React 18 + Vite + Recharts |
-| Language | Python 3.11 / JavaScript (ES2022) |
+- **AI/ML:** LightGBM, SHAP, Scikit-Learn, Pandas.
+- **Backend:** FastAPI, Pydantic, Uvicorn.
+- **Frontend:** React 18, Vite, Mantine UI, Recharts, Lucide Icons.
+- **DevOps:** Docker, Docker Compose.
