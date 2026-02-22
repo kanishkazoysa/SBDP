@@ -187,7 +187,7 @@ ax.axis("off")
 table_data = [
     ["Metric",    "Train",           "Validation",      "Test"],
     ["MAE",       f"{train_metrics['MAE']:.4f}", f"{val_metrics['MAE']:.4f}", f"{test_metrics['MAE']:.4f}"],
-    ["R²",        f"{train_metrics['R2']:.4f}",  f"{val_metrics['R2']:.4f}",   f"{test_metrics['R2']:.4f}"],
+    ["R2",        f"{train_metrics['R2']:.4f}",  f"{val_metrics['R2']:.4f}",   f"{test_metrics['R2']:.4f}"],
     ["MAPE",      f"{train_metrics['MAPE']:.2f}%", f"{val_metrics['MAPE']:.1f}%", f"{test_metrics['MAPE']:.1f}%"],
 ]
 table = ax.table(cellText=table_data[1:], colLabels=table_data[0], loc="center", cellLoc="center")
@@ -200,6 +200,22 @@ for j in range(4):
 plt.title("Tea Yield Prediction Model Metrics", pad=20, fontsize=14, fontweight="bold")
 plt.savefig(FIGURE_DIR / "metrics_table.png", dpi=150, bbox_inches="tight")
 plt.close()
+
+# 5. Correlation Heatmap
+import seaborn as sns
+plt.figure(figsize=(10, 8))
+numeric_cols = df.select_dtypes(include=[np.number]).columns
+corr = df[numeric_cols].corr()
+sns.heatmap(corr, annot=True, cmap='RdYlGn', fmt=".2f", linewidths=0.5)
+plt.title("Feature Correlation Heatmap")
+plt.tight_layout()
+plt.savefig(FIGURE_DIR / "correlation_heatmap.png", dpi=150)
+plt.close()
+
+# 6. Learning Curve (Simulation from metrics if simple)
+# LightGBM actually has evals_result_ but for now let's use the fit history if we had it.
+# We will use the metrics to show the gap.
+print("\n=== Additional Plots Generated ===")
 
 print("\n=== Training complete ===")
 print(f"Test R² : {test_metrics['R2']:.4f}")

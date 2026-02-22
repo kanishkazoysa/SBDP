@@ -105,7 +105,31 @@ plt.tight_layout()
 plt.savefig(FIGURE_DIR / "shap_dependence_rainfall.png", dpi=150)
 plt.close()
 
-# 4. Save JSON for frontend
+# 4. Dependence: Temperature
+feat_idx_t = FEATURES.index("avg_temp_c")
+fig, ax = plt.subplots(figsize=(8, 5))
+ax.scatter(X_sample["avg_temp_c"], shap_values[:, feat_idx_t], alpha=0.5, color="#059669")
+ax.axhline(0, color="red", linestyle="--")
+ax.set_xlabel("Average Temperature (C)")
+ax.set_ylabel("SHAP Value")
+ax.set_title("Temperature Impact Curve")
+plt.tight_layout()
+plt.savefig(FIGURE_DIR / "shap_dependence_temp.png", dpi=150)
+plt.close()
+
+# 5. Dependence: Soil pH
+feat_idx_p = FEATURES.index("soil_ph")
+fig, ax = plt.subplots(figsize=(8, 5))
+ax.scatter(X_sample["soil_ph"], shap_values[:, feat_idx_p], alpha=0.5, color="#059669")
+ax.axhline(0, color="red", linestyle="--")
+ax.set_xlabel("Soil pH")
+ax.set_ylabel("SHAP Value")
+ax.set_title("Soil pH Impact Curve")
+plt.tight_layout()
+plt.savefig(FIGURE_DIR / "shap_dependence_ph.png", dpi=150)
+plt.close()
+
+# 6. Save JSON for frontend
 shap_importance = {
     display_names[i]: float(np.abs(shap_values[:, i]).mean())
     for i in range(len(FEATURES))
