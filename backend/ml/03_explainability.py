@@ -22,7 +22,7 @@ from pathlib import Path
 import shap
 
 ARTIFACT_DIR = Path(__file__).parent / "artifacts"
-FIGURE_DIR   = Path(__file__).parent / "figures"
+FIGURE_DIR   = Path(__file__).resolve().parents[2] / "report_assets"
 PROCESSED    = ARTIFACT_DIR / "processed.csv"
 
 FIGURE_DIR.mkdir(parents=True, exist_ok=True)

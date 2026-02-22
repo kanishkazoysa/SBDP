@@ -35,7 +35,7 @@ import lightgbm as lgb
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 ARTIFACT_DIR = Path(__file__).parent / "artifacts"
-FIGURE_DIR   = Path(__file__).parent / "figures"
+FIGURE_DIR   = Path(__file__).resolve().parents[2] / "report_assets"
 PROCESSED    = ARTIFACT_DIR / "processed.csv"
 MODEL_PKL    = ARTIFACT_DIR / "lgbm_model.pkl"
 ENC_PKL      = ARTIFACT_DIR / "label_encoders.pkl"
