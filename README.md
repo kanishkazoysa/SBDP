@@ -108,8 +108,6 @@ ML-Assignment/
 │   └── properties_raw.csv         # Raw scraped dataset (13,497 records)
 ├── notebook/
 │   └── ML_Property_Price_Prediction.ipynb  # Jupyter notebook (with outputs)
-├── report_assets/                 # Figures for the PDF report
-├── generate_report.py             # Generates the PDF report
 ├── docker-compose.yml             # One-command deployment
 └── README.md
 ```
