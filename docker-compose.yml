@@ -1,5 +1,5 @@
 # ── docker-compose.yml ────────────────────────────────────────────
-# Sri Lanka Property Price Predictor
+# LankaTea Intelligence: Yield Forecasting System
 #
 # Services:
 #   backend  — FastAPI + LightGBM model  (port 8000)
@@ -9,6 +9,7 @@
 #   docker-compose up --build          # first time
 #   docker-compose up                  # subsequent runs
 #   docker-compose down                # stop
+#
 
 services:
   # ── Backend: FastAPI + ML model ─────────────────────────────────
@@ -16,7 +17,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: sl_property_backend
+    container_name: lankatea_backend
     ports:
       - "8000:8000"
     volumes:
@@ -36,7 +37,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: sl_property_frontend
+    container_name: lankatea_frontend
     ports:
       - "3000:80"
     depends_on:
@@ -48,5 +49,5 @@ services:
 # Backend API docs: http://localhost:8000/docs  (Swagger UI)
 #
 # To re-train the model inside Docker:
-#   docker exec sl_property_backend python ml/01_preprocessing.py
-#   docker exec sl_property_backend python ml/02_train_evaluate.py
+#   docker exec lankatea_backend python ml/01_preprocessing.py
+#   docker exec lankatea_backend python ml/02_train_evaluate.py
