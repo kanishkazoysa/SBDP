@@ -14,6 +14,7 @@ Steps:
 import pandas as pd
 import numpy as np
 import json
+import re
 from pathlib import Path
 
 RAW_CSV   = Path(__file__).parent.parent.parent / "dataset" / "properties_raw.csv"
@@ -26,6 +27,11 @@ OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
 df = pd.read_csv(RAW_CSV)
 print(f"Raw rows : {len(df):,}")
 print(f"Columns  : {list(df.columns)}")
+print(f"Sources  : {df['source'].value_counts().to_dict() if 'source' in df.columns else 'N/A'}")
+
+# 1b. No cap - use all available data for maximum accuracy
+pass
+
 
 # ── 2. Clean target variable (price_lkr) ──────────────────────────────────────
 df["price_lkr"] = pd.to_numeric(df["price_lkr"], errors="coerce")
@@ -46,20 +52,58 @@ print(f"After 1–99 pct filter     : {len(df):,}")
 
 # ── 3. Feature engineering ─────────────────────────────────────────────────────
 
-# Property type — clean and group
+# Property type — clean and group (handles ikman.lk, hitad.lk, patpat.lk)
 df["property_type"] = df["property_type"].str.strip()
 type_map = {
+    # ikman.lk names
     "Land For Sale":       "Land",
     "Houses For Sale":     "House",
     "Apartments For Sale": "Apartment",
+    # Clean names (patpat.lk / hitad.lk)
     "Land":                "Land",
+    "House":               "House",
+    "Apartment":           "Apartment",
     "Houses":              "House",
     "Apartments":          "Apartment",
+    "Commercial":          "Commercial",
+    "Commercial buildings": "Commercial",
+    "Room":                "Other",
 }
-df["property_type"] = df["property_type"].map(type_map).fillna("Other")
+df["property_type"] = df["property_type"].map(type_map)
 
-# Location — use as-is (city-level from title extraction)
-df["location"] = df["location"].str.strip().fillna("Unknown")
+# For rows where type didn't map (patpat garbage values), infer from title
+def infer_type_from_title(row):
+    if pd.notna(row["property_type"]):
+        return row["property_type"]
+    title = str(row.get("title", "")).lower()
+    if "land" in title:
+        return "Land"
+    if "house" in title or "villa" in title or "bungalow" in title or "annex" in title:
+        return "House"
+    if "apartment" in title or "flat" in title:
+        return "Apartment"
+    if "commercial" in title or "shop" in title or "hotel" in title or "office" in title:
+        return "Commercial"
+    return "Other"
+
+df["property_type"] = df.apply(infer_type_from_title, axis=1)
+
+
+# Location — clean and remove garbage (prices/dates from patpat parsing)
+def clean_location(loc):
+    loc = str(loc).strip()
+    if not loc or loc == "nan":
+        return "Unknown"
+    # Remove things like "Rs: 36,500,000" or "Rs. 15,000"
+    loc = re.sub(r'Rs:?\s*[\d,.]+', '', loc).strip()
+    # Remove date-like patterns 2024, 2025, 2026
+    loc = re.sub(r'202[456]', '', loc).strip()
+    # Remove trailing symbols
+    loc = loc.rstrip(' -:–')
+    return loc if loc else "Unknown"
+
+df["location"] = df["location"].apply(clean_location)
+
 
 # Quality tier (0=Standard, 1=Modern, 2=Luxury, 3=Super Luxury)
 if "quality_tier" in df.columns:

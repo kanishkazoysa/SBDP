@@ -22,38 +22,40 @@
     "quality_tier",
     "is_furnished"
   ],
-  "n_rows": 8814,
+  "n_rows": 12281,
   "price_stats": {
-    "min": 155000.0,
-    "max": 320000000.0,
-    "mean": 31529198.494554117,
-    "median": 6200000.0
+    "min": 150000.0,
+    "max": 285000000.0,
+    "mean": 28463602.029476427,
+    "median": 10500000.0
   },
   "property_type_counts": {
-    "Land": 4870,
-    "House": 1995,
-    "Apartment": 1949
+    "Land": 6062,
+    "House": 4055,
+    "Apartment": 2065,
+    "Commercial": 88,
+    "Other": 11
   },
   "location_counts": {
-    "Colombo": 2258,
-    "Gampaha": 761,
-    "Athurugiriya": 354,
-    "Piliyandala": 312,
-    "Kalutara": 300,
-    "Rajagiriya": 229,
-    "Nugegoda": 201,
-    "Dehiwala": 197,
-    "Malabe": 194,
-    "Minuwangoda": 185,
-    "Kadawatha": 184,
-    "Thalawathugoda": 181,
-    "Homagama": 156,
-    "Kottawa": 151,
-    "Battaramulla": 150,
-    "Matara": 144,
-    "Negombo": 139,
-    "Kotte": 131,
-    "Hambantota": 131,
-    "Kandy": 129
+    "Colombo": 2343,
+    "Gampaha": 823,
+    "Unknown": 568,
+    "Athurugiriya": 546,
+    "Piliyandala": 436,
+    "Homagama": 344,
+    "Kalutara": 328,
+    "Malabe": 311,
+    "Kadawatha": 251,
+    "Rajagiriya": 246,
+    "Minuwangoda": 240,
+    "Dehiwala": 233,
+    "Kottawa": 229,
+    "Nugegoda": 225,
+    "Panadura": 217,
+    "Thalawathugoda": 180,
+    "Battaramulla": 178,
+    "Kurunegala": 165,
+    "Negombo": 165,
+    "Kandy": 164
   }
 }

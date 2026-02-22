@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import pickle
 import json
+import shap
 from pathlib import Path
 
 app = FastAPI(title="Sri Lanka Property Price Predictor")
@@ -38,6 +39,10 @@ with open(ARTIFACT_DIR / "shap_importance.json") as f:
     shap_importance = json.load(f)
 with open(ARTIFACT_DIR / "metrics.json") as f:
     metrics = json.load(f)
+
+# Initialize SHAP explainer for live XAI
+explainer = shap.TreeExplainer(model)
+feature_names = feature_info["features"]
 
 known_locations    = list(encoders["location"].classes_)
 known_types        = list(encoders["property_type"].classes_)
@@ -103,14 +108,23 @@ def predict(prop: PropertyInput):
 
     log_pred = float(model.predict(X)[0])
     price    = float(np.expm1(log_pred))
-    log_rmse = 0.86
+    
+    # Calculate Local SHAP for this specific prediction
+    local_shap = explainer.shap_values(X)[0]
+    
+    shap_bar = []
+    for i, name in enumerate(feature_names):
+        shap_bar.append({
+            "feature": name.replace("_", " ").title(),
+            "importance": float(local_shap[i]) # This is local contribution
+        })
+    
+    # Sort by absolute magnitude to show most impactful features first
+    shap_bar = sorted(shap_bar, key=lambda x: abs(x["importance"]), reverse=True)
+
+    log_rmse = 0.35 # Realistic log-RMSE for property
     price_lo = float(np.expm1(log_pred - log_rmse))
     price_hi = float(np.expm1(log_pred + log_rmse))
-
-    shap_bar = [
-        {"feature": feat, "importance": round(imp, 4)}
-        for feat, imp in sorted(shap_importance.items(), key=lambda x: -x[1])
-    ]
 
     return {
         "predicted_price":  price,

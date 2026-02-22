@@ -59,8 +59,8 @@ export default function PredictionForm({ onPredict, loading, meta }) {
       bedrooms: isHouseOrApt ? form.bedrooms : null,
       bathrooms: isHouseOrApt ? form.bathrooms : null,
       land_size_perches: form.land_size_perches,
-      quality_tier: form.quality_tier,
-      is_furnished: form.is_furnished,
+      quality_tier: isHouseOrApt ? form.quality_tier : 0,
+      is_furnished: isHouseOrApt ? form.is_furnished : 0,
     }
     onPredict(payload)
   }
@@ -82,7 +82,13 @@ export default function PredictionForm({ onPredict, loading, meta }) {
           <SegmentedControl
             fullWidth
             value={form.property_type}
-            onChange={val => set('property_type', val)}
+            onChange={val => {
+              set('property_type', val)
+              if (val === 'Land') {
+                set('quality_tier', 0)
+                set('is_furnished', 0)
+              }
+            }}
             data={PROPERTY_TYPES.map(t => ({ label: t, value: t }))}
           />
         </Box>
@@ -136,33 +142,37 @@ export default function PredictionForm({ onPredict, loading, meta }) {
           required={isLand}
         />
 
-        <Divider label="Quality & Furnishing" labelPosition="center" />
+        {isHouseOrApt && (
+          <>
+            <Divider label="Quality & Furnishing" labelPosition="center" />
 
-        {/* Quality Tier */}
-        <Box>
-          <Text size="sm" fw={500} mb={6} c="dimmed">
-            <Group gap={4} component="span"><Star size={13} /> Quality Tier</Group>
-          </Text>
-          <SegmentedControl
-            fullWidth
-            value={String(form.quality_tier)}
-            onChange={val => set('quality_tier', Number(val))}
-            data={QUALITY_OPTIONS}
-          />
-        </Box>
+            {/* Quality Tier */}
+            <Box>
+              <Text size="sm" fw={500} mb={6} c="dimmed">
+                <Group gap={4} component="span"><Star size={13} /> Quality Tier</Group>
+              </Text>
+              <SegmentedControl
+                fullWidth
+                value={String(form.quality_tier)}
+                onChange={val => set('quality_tier', Number(val))}
+                data={QUALITY_OPTIONS}
+              />
+            </Box>
 
-        {/* Furnishing */}
-        <Box>
-          <Text size="sm" fw={500} mb={6} c="dimmed">
-            <Group gap={4} component="span"><Sofa size={13} /> Furnishing</Group>
-          </Text>
-          <SegmentedControl
-            fullWidth
-            value={String(form.is_furnished)}
-            onChange={val => set('is_furnished', Number(val))}
-            data={FURNISH_OPTIONS}
-          />
-        </Box>
+            {/* Furnishing */}
+            <Box>
+              <Text size="sm" fw={500} mb={6} c="dimmed">
+                <Group gap={4} component="span"><Sofa size={13} /> Furnishing</Group>
+              </Text>
+              <SegmentedControl
+                fullWidth
+                value={String(form.is_furnished)}
+                onChange={val => set('is_furnished', Number(val))}
+                data={FURNISH_OPTIONS}
+              />
+            </Box>
+          </>
+        )}
 
         {/* Summary pill */}
         <Box p="sm" style={{
@@ -182,10 +192,14 @@ export default function PredictionForm({ onPredict, loading, meta }) {
               {form.land_size_perches && (
                 <>{' · '}<Text component="span">{form.land_size_perches} perches</Text></>
               )}
-              {' · '}
-              <Text component="span" c="violet.4">{qualityLabel}</Text>
-              {form.is_furnished > 0 && (
-                <>{' · '}<Text component="span" c="teal.4">{furnishLabel}</Text></>
+              {isHouseOrApt && (
+                <>
+                  {' · '}
+                  <Text component="span" c="violet.4">{qualityLabel}</Text>
+                  {form.is_furnished > 0 && (
+                    <>{' · '}<Text component="span" c="teal.4">{furnishLabel}</Text></>
+                  )}
+                </>
               )}
             </Text>
           </Group>
