@@ -44,7 +44,7 @@ export default function ShapChart({ shapFeatures }) {
   }
 
   return (
-    <Paper withBorder p="xl" radius="md" style={{ flex: 1, position: 'relative' }}>
+    <Paper withBorder p="xl" radius="md">
       <Group justify="space-between" align="flex-start" mb="md">
         <div>
           <Title order={4} mb={4}>Local Explanation (SHAP)</Title>
@@ -58,7 +58,7 @@ export default function ShapChart({ shapFeatures }) {
         </Group>
       </Group>
 
-      <div style={{ width: '100%', height: 280 }}>
+      <div style={{ width: '100%', height: data.length * 40 + 16 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} layout="vertical" margin={{ top: 0, right: 30, left: 10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.05)" />
