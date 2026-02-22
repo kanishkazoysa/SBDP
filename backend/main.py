@@ -1,9 +1,8 @@
 """
 backend/main.py
 ================
-Sri Lanka Property Price Prediction API
+Sri Lanka Tea Yield Prediction API
 FastAPI backend — LightGBM model
-Run:  uvicorn main:app --reload  (from backend/ directory)
 """
 
 from fastapi import FastAPI, HTTPException
@@ -16,7 +15,7 @@ import json
 import shap
 from pathlib import Path
 
-app = FastAPI(title="Sri Lanka Property Price Predictor")
+app = FastAPI(title="Sri Lanka Tea Yield Forecaster")
 
 app.add_middleware(
     CORSMiddleware,
@@ -28,7 +27,6 @@ app.add_middleware(
 # ── Load artifacts ─────────────────────────────────────────────────────────────
 ARTIFACT_DIR = Path(__file__).parent / "ml" / "artifacts"
 
-# Current price model
 with open(ARTIFACT_DIR / "lgbm_model.pkl", "rb") as f:
     model = pickle.load(f)
 with open(ARTIFACT_DIR / "label_encoders.pkl", "rb") as f:
@@ -40,100 +38,103 @@ with open(ARTIFACT_DIR / "shap_importance.json") as f:
 with open(ARTIFACT_DIR / "metrics.json") as f:
     metrics = json.load(f)
 
-# Initialize SHAP explainer for live XAI
+# Initialize SHAP explainer
 explainer = shap.TreeExplainer(model)
 feature_names = feature_info["features"]
 
-known_locations    = list(encoders["location"].classes_)
-known_types        = list(encoders["property_type"].classes_)
-
 # ── Request schemas ────────────────────────────────────────────────────────────
-class PropertyInput(BaseModel):
-    property_type:     str
-    location:          str
-    bedrooms:          float | None = None
-    bathrooms:         float | None = None
-    land_size_perches: float | None = None
-    quality_tier:      int = 0    # 0=Standard,1=Modern,2=Luxury,3=Super Luxury
-    is_furnished:      int = 0    # 0=Unknown,1=Semi-Furnished,2=Fully Furnished
+class TeaYieldInput(BaseModel):
+    district:            str
+    elevation:           str
+    monthly_rainfall_mm: float
+    avg_temp_c:          float
+    soil_nitrogen:       float
+    soil_phosphorus:     float
+    soil_potassium:      float
+    soil_ph:             float
+    fertilizer_type:     str
+    drainage_quality:    str
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 def safe_encode(le, value: str, fallback: str = None):
     classes = list(le.classes_)
     if value in classes:
         return le.transform([value])[0]
-    if fallback and fallback in classes:
-        return le.transform([fallback])[0]
     return 0
-
-def fmt_price(v: float) -> str:
-    if v >= 1_000_000:
-        return f"Rs. {v/1_000_000:.1f}M"
-    return f"Rs. {v:,.0f}"
 
 # ── Endpoints ──────────────────────────────────────────────────────────────────
 @app.get("/")
 def root():
-    return {"status": "ok", "model": "LightGBM Property Price Predictor"}
+    return {"status": "ok", "model": "Tea Yield Forecast AI"}
 
 @app.get("/meta")
 def get_meta():
     return {
-        "locations":          known_locations,
-        "property_types":     known_types,
+        "districts":          feature_info["districts"],
+        "elevations":         feature_info["elevations"],
+        "fertilizer_types":    feature_info["fertilizer_types"],
+        "drainage_qualities": feature_info["drainage_qualities"],
         "metrics":            metrics["test"],
         "dataset_size":       feature_info["n_rows"],
         "shap_importance":    shap_importance,
-        "price_stats":        feature_info["price_stats"],
+        "yield_stats":        feature_info["yield_stats"],
     }
 
 @app.post("/predict")
-def predict(prop: PropertyInput):
+def predict(inp: TeaYieldInput):
     try:
-        pt_enc  = safe_encode(encoders["property_type"], prop.property_type)
-        loc_enc = safe_encode(encoders["location"],      prop.location, "Colombo")
+        dist_enc  = safe_encode(encoders["district"],        inp.district)
+        elev_enc  = safe_encode(encoders["elevation"],       inp.elevation)
+        fert_enc  = safe_encode(encoders["fertilizer_type"], inp.fertilizer_type)
+        drain_enc = safe_encode(encoders["drainage_quality"], inp.drainage_quality)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    X = pd.DataFrame([{
-        "property_type":     pt_enc,
-        "location":          loc_enc,
-        "bedrooms":          prop.bedrooms          if prop.bedrooms          is not None else np.nan,
-        "bathrooms":         prop.bathrooms         if prop.bathrooms         is not None else np.nan,
-        "land_size_perches": prop.land_size_perches if prop.land_size_perches is not None else np.nan,
-        "is_for_rent":       0,
-        "quality_tier":      prop.quality_tier,
-        "is_furnished":      prop.is_furnished,
+    X_df = pd.DataFrame([{
+        "district":            dist_enc,
+        "elevation":           elev_enc,
+        "monthly_rainfall_mm": inp.monthly_rainfall_mm,
+        "avg_temp_c":          inp.avg_temp_c,
+        "soil_nitrogen":       inp.soil_nitrogen,
+        "soil_phosphorus":     inp.soil_phosphorus,
+        "soil_potassium":      inp.soil_potassium,
+        "soil_ph":             inp.soil_ph,
+        "fertilizer_type":     fert_enc,
+        "drainage_quality":    drain_enc,
     }])
 
-    log_pred = float(model.predict(X)[0])
-    price    = float(np.expm1(log_pred))
+    # LightGBM predict
+    yield_pred = float(model.predict(X_df)[0])
     
-    # Calculate Local SHAP for this specific prediction
-    local_shap = explainer.shap_values(X)[0]
+    # Calculate Local SHAP
+    local_shap = explainer.shap_values(X_df)[0]
+    
+    friendly_names = {
+        "district": "Location (District)",
+        "elevation": "Elevation Zone",
+        "monthly_rainfall_mm": "Rainfall Intensity",
+        "avg_temp_c": "Ambient Temperature",
+        "soil_nitrogen": "Nitrogen Level",
+        "soil_phosphorus": "Phosphorus Level",
+        "soil_potassium": "Potassium Level",
+        "soil_ph": "Soil Acidity (pH)",
+        "fertilizer_type": "Fertilization Choice",
+        "drainage_quality": "Soil Drainage",
+    }
     
     shap_bar = []
     for i, name in enumerate(feature_names):
         shap_bar.append({
-            "feature": name.replace("_", " ").title(),
-            "importance": float(local_shap[i]) # This is local contribution
+            "feature": friendly_names.get(name, name.replace("_", " ").title()),
+            "importance": float(local_shap[i])
         })
     
-    # Sort by absolute magnitude to show most impactful features first
     shap_bar = sorted(shap_bar, key=lambda x: abs(x["importance"]), reverse=True)
 
-    log_rmse = 0.35 # Realistic log-RMSE for property
-    price_lo = float(np.expm1(log_pred - log_rmse))
-    price_hi = float(np.expm1(log_pred + log_rmse))
-
     return {
-        "predicted_price":  price,
-        "price_formatted":  fmt_price(price),
-        "price_range_low":  price_lo,
-        "price_range_high": price_hi,
-        "range_low_fmt":    fmt_price(price_lo),
-        "range_high_fmt":   fmt_price(price_hi),
+        "predicted_yield":  round(yield_pred, 3),
+        "yield_unit":       "Metric Tons per Hectare (MT/Hec)",
         "shap_features":    shap_bar,
         "model_r2":         round(metrics["test"]["R2"], 4),
-        "model_mae":        metrics["test"]["MAE"],
+        "model_mae":        round(metrics["test"]["MAE"], 4),
     }

@@ -1,10 +1,12 @@
 {
-  "Property Type": 0.8601764488894043,
-  "District / Location": 0.3213665728810399,
-  "Number of Bedrooms": 0.1897251282605429,
-  "Number of Bathrooms": 0.45427284056404915,
-  "Land Size (Perches)": 0.31439077263486254,
-  "Rental vs Sale": 0.0,
-  "Quality Tier (Luxury)": 0.03216148318449791,
-  "Furnishing Status": 0.006948351316410531
+  "District": 0.001293368838658297,
+  "Elevation Zone": 0.0002853392820746466,
+  "Rainfall (mm)": 0.08001941276172632,
+  "Avg Temperature (\u00b0C)": 0.09198287296852048,
+  "Soil Nitrogen (N)": 0.17228072408240305,
+  "Soil Phosphorus (P)": 0.04847585268349867,
+  "Soil Potassium (K)": 0.047810026555598524,
+  "Soil pH Level": 0.0007399153718748722,
+  "Fertilizer Type": 0.09389712017057526,
+  "Drainage Quality": 0.000630551346198217
 }

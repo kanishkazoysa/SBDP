@@ -1,38 +1,71 @@
-import { Text, Stack, Box } from '@mantine/core'
-import { BarChart2 } from 'lucide-react'
+import { Text, Stack, Box, Group, Badge, ThemeIcon } from '@mantine/core'
+import { Activity, Microscope, Share2, Database, ShieldCheck } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { Icon: BarChart2, label: 'Valuation', sub: 'Price predictor', active: true },
+  { Icon: Activity, label: 'Analytics', sub: 'Yield Forecast', active: true },
+  { Icon: Microscope, label: 'Research', sub: 'Chemical Analysis', active: false },
+  { Icon: Database, label: 'History', sub: 'TRI Archives', active: false },
 ]
 
-export default function Sidebar() {
+export default function Sidebar({ meta }) {
   return (
     <aside className="sidebar">
+      {/* Brand Section already in App header, so focus on Navigation */}
 
-      {/* Navigation */}
-      <Stack gap={4} className="sidebar-nav">
-        <Text size="xs" c="dimmed" tt="uppercase" fw={600} mb={6} style={{ letterSpacing: '0.55px' }}>
-          Menu
+      <Box className="sidebar-nav">
+        <Text size="xs" c="dimmed" tt="uppercase" fw={800} mb="xl" style={{ letterSpacing: '1.5px', paddingLeft: 16 }}>
+          Operational Suite
         </Text>
-        {NAV_ITEMS.map(({ Icon, label, sub, active }) => (
-          <div key={label} className={`sidebar-item ${active ? 'sidebar-item-active' : ''}`}>
-            <Icon size={16} style={{ flexShrink: 0 }} />
-            <div style={{ minWidth: 0 }}>
-              <Text size="sm" fw={500} lh={1.2} truncate>{label}</Text>
-              <Text size="xs" c="dimmed" lh={1.1} truncate>{sub}</Text>
+
+        <Stack gap={6}>
+          {NAV_ITEMS.map(({ Icon, label, sub, active }) => (
+            <div key={label} className={`sidebar-item ${active ? 'sidebar-item-active' : ''}`}>
+              <Icon size={18} />
+              <div style={{ minWidth: 0 }}>
+                <Text size="sm" fw={700} lh={1.1}>{label}</Text>
+                <Text size="xs" c="dimmed" lh={1} mt={4}>{sub}</Text>
+              </div>
             </div>
-          </div>
-        ))}
-      </Stack>
+          ))}
+        </Stack>
+
+        <Box mt={60} px={16}>
+          <Text size="xs" c="dimmed" tt="uppercase" fw={800} mb="lg" style={{ letterSpacing: '1.5px' }}>
+            System Integrity
+          </Text>
+
+          <Stack gap="sm">
+            <Box p="md" style={{ borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
+              <Group justify="space-between" mb={4}>
+                <Text size="xs" fw={700} c="dimmed">R² PRECISION</Text>
+                <Badge variant="dot" color="green" size="xs">ACTIVE</Badge>
+              </Group>
+              <Text size="lg" fw={900} c="white">
+                {meta?.metrics?.R2 ? (meta.metrics.R2 * 100).toFixed(1) + '%' : '...'}
+              </Text>
+            </Box>
+
+            <Box p="md" style={{ borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
+              <Text size="xs" fw={700} c="dimmed" mb={4}>TELEMETRY DATA</Text>
+              <Group gap={6}>
+                <Database size={12} color="var(--tea-emerald)" />
+                <Text size="sm" fw={800} c="white">{meta?.dataset_size || '0'}</Text>
+                <Text size="xs" c="dimmed">Data Points</Text>
+              </Group>
+            </Box>
+          </Stack>
+        </Box>
+      </Box>
 
       <Box style={{ flex: 1 }} />
 
-      {/* Footer */}
       <Box className="sidebar-footer">
-        <Text size="xs" c="dimmed">Sri Lanka Real Estate</Text>
-        <Text size="xs" c="dimmed" mt={2}>Property Valuation v1.0</Text>
+        <Group gap="xs" mb={8}>
+          <ShieldCheck size={14} color="var(--tea-emerald)" />
+          <Text size="xs" fw={700} c="white">ENCRYPTED CORE</Text>
+        </Group>
+        <Text size="xs" c="dimmed">Distributed for Tea Research Institute Sri Lanka (TRI)</Text>
       </Box>
-
     </aside>
   )
 }

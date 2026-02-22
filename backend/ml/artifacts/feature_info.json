@@ -1,61 +1,61 @@
 {
   "features": [
-    "property_type",
-    "location",
-    "bedrooms",
-    "bathrooms",
-    "land_size_perches",
-    "is_for_rent",
-    "quality_tier",
-    "is_furnished"
+    "district",
+    "elevation",
+    "monthly_rainfall_mm",
+    "avg_temp_c",
+    "soil_nitrogen",
+    "soil_phosphorus",
+    "soil_potassium",
+    "soil_ph",
+    "fertilizer_type",
+    "drainage_quality"
   ],
-  "target": "price_lkr",
+  "target": "yield_mt_per_hec",
   "categorical_features": [
-    "property_type",
-    "location"
+    "district",
+    "elevation",
+    "fertilizer_type",
+    "drainage_quality"
   ],
   "numeric_features": [
-    "bedrooms",
-    "bathrooms",
-    "land_size_perches",
-    "is_for_rent",
-    "quality_tier",
-    "is_furnished"
+    "monthly_rainfall_mm",
+    "avg_temp_c",
+    "soil_nitrogen",
+    "soil_phosphorus",
+    "soil_potassium",
+    "soil_ph"
   ],
-  "n_rows": 12281,
-  "price_stats": {
-    "min": 150000.0,
-    "max": 285000000.0,
-    "mean": 28463602.029476427,
-    "median": 10500000.0
+  "n_rows": 5000,
+  "yield_stats": {
+    "min": 0.256,
+    "max": 2.02,
+    "mean": 0.9177866,
+    "median": 0.89
   },
-  "property_type_counts": {
-    "Land": 6062,
-    "House": 4055,
-    "Apartment": 2065,
-    "Commercial": 88,
-    "Other": 11
-  },
-  "location_counts": {
-    "Colombo": 2343,
-    "Gampaha": 823,
-    "Unknown": 568,
-    "Athurugiriya": 546,
-    "Piliyandala": 436,
-    "Homagama": 344,
-    "Kalutara": 328,
-    "Malabe": 311,
-    "Kadawatha": 251,
-    "Rajagiriya": 246,
-    "Minuwangoda": 240,
-    "Dehiwala": 233,
-    "Kottawa": 229,
-    "Nugegoda": 225,
-    "Panadura": 217,
-    "Thalawathugoda": 180,
-    "Battaramulla": 178,
-    "Kurunegala": 165,
-    "Negombo": 165,
-    "Kandy": 164
-  }
+  "districts": [
+    "Badulla",
+    "Galle",
+    "Kalutara",
+    "Kandy",
+    "Kegalle",
+    "Matale",
+    "Nuwara Eliya",
+    "Ratnapura"
+  ],
+  "elevations": [
+    "High",
+    "Low",
+    "Mid"
+  ],
+  "fertilizer_types": [
+    "Chemical",
+    "Combo",
+    "Organic"
+  ],
+  "drainage_qualities": [
+    "Fair",
+    "Good",
+    "Poor"
+  ]
 }

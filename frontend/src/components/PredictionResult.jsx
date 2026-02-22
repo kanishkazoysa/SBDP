@@ -1,63 +1,95 @@
-import { Paper, Title, Text, Group, Badge, Button, Divider } from '@mantine/core'
-import { TrendingUp, ArrowRight } from 'lucide-react'
+import { Paper, Title, Text, Group, Badge, ThemeIcon, Stack, Box } from '@mantine/core'
+import { TrendingUp, Wheat, AlertCircle, Sparkles } from 'lucide-react'
 
-function fmtLKR(v) {
-  if (!v) return 'N/A'
-  if (v >= 1_000_000) return `Rs. ${(v / 1_000_000).toFixed(2)}M`
-  if (v >= 1_000) return `Rs. ${(v / 1_000).toFixed(0)}K`
-  return `Rs. ${v.toFixed(0)}`
-}
-
-export default function PredictionResult({ result, onForecast }) {
+export default function PredictionResult({ result }) {
   const {
-    predicted_price, price_formatted,
-    range_low_fmt, range_high_fmt,
+    predicted_yield, yield_unit,
     model_r2, model_mae,
   } = result
 
-  const priceMillion = predicted_price / 1_000_000
-  let tierColor = '#22c55e'
-  let tierLabel = 'Budget'
-  if (priceMillion > 100) { tierColor = '#ef4444'; tierLabel = 'Premium' }
-  else if (priceMillion > 30) { tierColor = '#f59e0b'; tierLabel = 'Mid-Range' }
-  else if (priceMillion > 10) { tierColor = '#6366f1'; tierLabel = 'Standard' }
+  let tierColor = 'green'
+  let tierLabel = 'Optimal'
+  let description = "This configuration indicates a high-yield harvest. Environment and nutrients are well-aligned."
+  let gradient = { from: '#10b981', to: '#059669', deg: 135 }
+
+  if (predicted_yield < 0.6) {
+    tierColor = 'red'
+    tierLabel = 'Critical Low'
+    gradient = { from: '#ef4444', to: '#991b1b', deg: 135 }
+    description = "Yield is significantly below industrial average. Check Phosphorus levels and drainage immediately."
+  } else if (predicted_yield < 0.9) {
+    tierColor = 'orange'
+    tierLabel = 'Sub-Optimal'
+    gradient = { from: '#f59e0b', to: '#b45309', deg: 135 }
+    description = "Yield is slightly below potential. Consider adjusting Nitrogen balance or Irrigation timing."
+  } else if (predicted_yield > 1.4) {
+    tierColor = 'teal'
+    tierLabel = 'Elite Harvest'
+    gradient = { from: '#14b8a6', to: '#0f766e', deg: 135 }
+    description = "Exceptional yield parameters. This estate is performing at peak biological efficiency."
+  }
 
   return (
-    <Paper withBorder p="xl" radius="md">
-      <Group justify="space-between" mb="md" align="center">
-        <Title order={4}>Predicted Price</Title>
+    <Paper className="premium-card" p="xl">
+      <Group justify="space-between" mb="lg">
+        <Group gap="xs">
+          <ThemeIcon variant="light" color={tierColor} radius="md">
+            <Sparkles size={16} />
+          </ThemeIcon>
+          <Title order={4} c="white">Yield Forecast Result</Title>
+        </Group>
+        <Badge variant="filled" color={tierColor} size="lg" radius="sm" p="md">
+          {tierLabel}
+        </Badge>
       </Group>
 
-      <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 12, padding: '20px 24px', marginBottom: 16, textAlign: 'center' }}>
-        <Group justify="center" mb={4}>
-          <TrendingUp size={18} color="#6366f1" />
-          <Text size="xs" tt="uppercase" fw={700} c="dimmed" style={{ letterSpacing: '1px' }}>
-            Estimated Market Price
+      <Box style={{
+        background: 'rgba(12, 18, 16, 0.8)',
+        border: `1px solid rgba(16, 185, 129, 0.2)`,
+        borderRadius: 16,
+        padding: '24px',
+        marginBottom: 24,
+        textAlign: 'center',
+        position: 'relative'
+      }}>
+        <Group justify="center" mb={10} gap={8}>
+          <TrendingUp size={14} color="var(--tea-emerald)" />
+          <Text size="10px" fw={700} c="dimmed" style={{ letterSpacing: '1.2px', textTransform: 'uppercase' }}>
+            Projected Monthly Yield
           </Text>
         </Group>
-        <Text fw={800} size="2.4rem" style={{ color: tierColor, lineHeight: 1.1 }}>
-          {price_formatted}
+
+        <Text fw={900} size="3.8rem" style={{
+          color: '#fff',
+          lineHeight: 1,
+        }}>
+          {predicted_yield}
         </Text>
-        <Text size="sm" c="dimmed" mt={6}>Range: {range_low_fmt} — {range_high_fmt}</Text>
-        <Badge color="indigo" variant="light" mt={10} size="md">{tierLabel} Tier</Badge>
-      </div>
+        <Text size="10px" fw={700} c="dimmed" mt={12} style={{ letterSpacing: '1px', textTransform: 'uppercase' }}>
+          Metric Tons Per Hectare ({yield_unit.toUpperCase()})
+        </Text>
+      </Box>
 
-      <div style={{ marginBottom: 20 }}>
-        <Group justify="space-between" mb={4}>
-          <Text size="xs" c="dimmed">Confidence Range</Text>
-          <Text size="xs" c="dimmed">±1 std deviation</Text>
-        </Group>
-        <div style={{ position: 'relative', height: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 4 }}>
-          <div style={{ position: 'absolute', left: '10%', right: '10%', height: '100%', background: 'rgba(99,102,241,0.3)', borderRadius: 4 }} />
-          <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 12, height: 12, background: '#6366f1', borderRadius: '50%', border: '2px solid #0f1218' }} />
-        </div>
-        <Group justify="space-between" mt={4}>
-          <Text size="xs" c="dimmed">{range_low_fmt}</Text>
-          <Text size="xs" fw={600} c="indigo.3">{price_formatted}</Text>
-          <Text size="xs" c="dimmed">{range_high_fmt}</Text>
-        </Group>
-      </div>
+      <Stack gap="md">
+        <Paper withBorder p="md" radius="lg" style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.06)' }}>
+          <Group gap="md" wrap="nowrap" align="flex-start">
+            <ThemeIcon size="md" variant="light" color={tierColor} radius="xl">
+              <Wheat size={16} />
+            </ThemeIcon>
+            <Box>
+              <Text size="sm" fw={600} c="white" mb={2}>Harvest Insight</Text>
+              <Text size="xs" c="dimmed" lh={1.4}>{description}</Text>
+            </Box>
+          </Group>
+        </Paper>
 
+        <Group gap="sm" wrap="nowrap" px="xs">
+          <AlertCircle size={14} color="#94a3b8" />
+          <Text size="xs" c="dimmed" fw={500}>
+            Forecast Reliability: <span style={{ color: 'var(--tea-emerald)', fontWeight: 700 }}>{model_r2 ? (model_r2 * 100).toFixed(1) + '%' : 'N/A'} Confidence</span>
+          </Text>
+        </Group>
+      </Stack>
     </Paper>
   )
 }

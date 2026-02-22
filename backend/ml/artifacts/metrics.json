@@ -1,37 +1,35 @@
 {
   "train": {
-    "MAE": 10208723.6700636,
-    "RMSE": 24189546.577845164,
-    "R2": 0.8389503316097875,
-    "MAPE": 89.36540383002493
+    "MAE": 0.0012154384352394269,
+    "RMSE": 0.0016252180831880056,
+    "R2": 0.9999674786589445,
+    "MAPE": 0.14173972944660493
   },
   "val": {
-    "MAE": 11886026.890575467,
-    "RMSE": 27637651.44473191,
-    "R2": 0.7792879089560517,
-    "MAPE": 134.66453667535808
+    "MAE": 0.02066867951516697,
+    "RMSE": 0.02671794953628209,
+    "R2": 0.9914567418954658,
+    "MAPE": 2.410951445412182
   },
   "test": {
-    "MAE": 11158692.838108143,
-    "RMSE": 25349243.358005617,
-    "R2": 0.8055703671525157,
-    "MAPE": 145.28879165656377
+    "MAE": 0.020567500286499632,
+    "RMSE": 0.02661855615338243,
+    "R2": 0.9916883632318512,
+    "MAPE": 2.3723171820930857
   },
-  "best_iteration": 214,
+  "best_iteration": 1729,
   "hyperparameters": {
-    "objective": "regression",
-    "metric": "rmse",
+    "objective": "huber",
+    "metric": "mae",
     "boosting_type": "gbdt",
-    "n_estimators": 1000,
+    "n_estimators": 2000,
     "learning_rate": 0.05,
-    "num_leaves": 63,
-    "max_depth": -1,
-    "min_child_samples": 20,
-    "feature_fraction": 0.8,
-    "bagging_fraction": 0.8,
+    "num_leaves": 31,
+    "max_depth": 8,
+    "min_child_samples": 10,
+    "feature_fraction": 0.9,
+    "bagging_fraction": 0.9,
     "bagging_freq": 5,
-    "reg_alpha": 0.1,
-    "reg_lambda": 0.1,
     "random_state": 42
   }
 }

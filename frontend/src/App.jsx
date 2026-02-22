@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Text, Group, ThemeIcon, Alert, Paper, Container, Stack } from '@mantine/core'
-import { Home, AlertCircle, BarChart2 } from 'lucide-react'
+import { Text, Group, ThemeIcon, Alert, Paper, Stack, Box } from '@mantine/core'
+import { Sprout, AlertCircle, BarChart2, Leaf, ShieldCheck } from 'lucide-react'
 import Sidebar from './components/Sidebar'
 import PredictionForm from './components/PredictionForm'
 import PredictionResult from './components/PredictionResult'
@@ -28,7 +28,7 @@ export default function App() {
         setTimeout(() => fetchMeta(retryCount + 1), 2000)
       } else {
         setConnectionStatus('error')
-        setError('Could not connect to the backend server. Please refresh the page.')
+        setError('Could not connect to the Intelligent Harvest server. Please refresh.')
       }
     }
   }, [])
@@ -45,7 +45,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       })
-      if (!res.ok) throw new Error((await res.json()).detail || 'Prediction failed')
+      if (!res.ok) throw new Error((await res.json()).detail || 'Forecast failed')
       setResult(await res.json())
     } catch (e) {
       setError(e.message)
@@ -57,32 +57,52 @@ export default function App() {
   return (
     <div className="app-root">
       <header className="site-header">
-        <Group justify="space-between">
-          <Group gap="sm">
-            <ThemeIcon variant="light" color="indigo" size={38} radius="md">
-              <Home size={19} />
+        <Group justify="space-between" align="center">
+          <Group gap="md">
+            <ThemeIcon variant="gradient" gradient={{ from: 'teal', to: 'lime', deg: 90 }} size={42} radius="lg">
+              <Sprout size={22} weight="bold" />
             </ThemeIcon>
-            <div>
-              <Text fw={700} size="md" c="white" lh={1.3}>Sri Lanka Property Price Predictor</Text>
-              <Text size="xs" c="dimmed" lh={1.2}>Predict property values using AI & explainable XAI</Text>
-            </div>
+            <Box>
+              <Text fw={900} size="xl" c="white" style={{ letterSpacing: '-0.5px', textTransform: 'uppercase' }}>
+                LankaTea <span style={{ color: 'var(--tea-emerald)', fontWeight: 300 }}>Intelligence</span>
+              </Text>
+              <Group gap={6}>
+                <ShieldCheck size={12} color="var(--tea-emerald)" />
+                <Text size="xs" c="dimmed" fw={500}>Verified Harvest Prediction Module v2.1</Text>
+              </Group>
+            </Box>
           </Group>
-          {connectionStatus === 'connecting' && <Text size="xs" c="yellow">Connecting to backend...</Text>}
-          {connectionStatus === 'ready' && <Text size="xs" c="teal">● Backend Ready ({meta?.locations?.length} cities)</Text>}
+
+          <Group gap="xl">
+            <Box style={{ textAlign: 'right' }}>
+              {connectionStatus === 'connecting' && (
+                <Group gap="xs">
+                  <div className="pulse-yellow" />
+                  <Text size="xs" c="yellow.5" fw={600}>TRI SIGNAL SEARCH...</Text>
+                </Group>
+              )}
+              {connectionStatus === 'ready' && (
+                <Group gap="xs">
+                  <Text size="xs" c="green.4" fw={700}>● SYSTEM ONLINE</Text>
+                  <Text size="xs" c="dimmed">{meta?.dataset_size}+ RECORDS</Text>
+                </Group>
+              )}
+            </Box>
+          </Group>
         </Group>
       </header>
 
       <div className="app-body">
-        <Sidebar />
+        <Sidebar meta={meta} />
         <div className="main-content">
           <div className="tab-panels-row">
             <div className="left-col">
               <PredictionForm onPredict={handlePredict} loading={loading} meta={meta} />
             </div>
             <div className="right-col">
-              <Stack gap="md" style={{ height: '100%' }}>
+              <Stack gap="xl" style={{ height: '100%' }}>
                 {error && (
-                  <Alert icon={<AlertCircle size={16} />} color="red" variant="light" title="System Notice" radius="md">
+                  <Alert icon={<AlertCircle size={16} />} color="red" variant="filled" title="Operational Alert" radius="md">
                     {error}
                   </Alert>
                 )}
@@ -90,16 +110,30 @@ export default function App() {
                 {result ? (
                   <>
                     <PredictionResult result={result} />
-                    <Paper withBorder radius="md" style={{ flex: 1, minHeight: 400 }}>
+                    <Paper className="premium-card" p="xl" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                      <Group mb="lg" justify="space-between">
+                        <Box>
+                          <Text fw={800} size="lg" c="white">Forecast Drivers</Text>
+                          <Text size="xs" c="dimmed">SHAP Explainable AI attribution analysis</Text>
+                        </Box>
+                        <BarChart2 size={20} color="var(--tea-emerald)" opacity={0.6} />
+                      </Group>
                       <ShapChart shapFeatures={result.shap_features} />
                     </Paper>
                   </>
                 ) : (
-                  <Paper withBorder radius="md" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div className="panel-empty">
-                      <BarChart2 size={32} color="#6366f1" style={{ opacity: 0.5 }} />
-                      <Text size="sm" fw={500} c="dimmed" mt="sm">Ready for Prediction</Text>
-                      <Text size="xs" c="dimmed">Enter property details on the left</Text>
+                  <Paper className="premium-card" style={{ flex: 1, display: 'flex' }}>
+                    <div className="panel-empty" style={{ width: '100%' }}>
+                      <div className="empty-icon-wrap">
+                        <Leaf size={32} color="var(--tea-emerald)" />
+                      </div>
+                      <Text size="xl" fw={900} c="white" mb="xs">Ready for Analysis</Text>
+                      <Text size="md" c="dimmed" maxW={300}>
+                        Complete the Estate Assessment form to generate a high-precision harvest forecast using LightGBM.
+                      </Text>
+                      <Box mt="xl" p="md" style={{ border: '1px dashed rgba(255,255,255,0.1)', borderRadius: 12 }}>
+                        <Text size="xs" c="dimmed">Awaiting telemetry from Sri Lankan tea-growing regions...</Text>
+                      </Box>
                     </div>
                   </Paper>
                 )}
