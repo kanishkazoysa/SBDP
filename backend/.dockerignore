@@ -5,3 +5,4 @@ __pycache__/
 .env
 *.log
 ml/artifacts/processed.csv
+ml/artifacts/shap_values.pkl

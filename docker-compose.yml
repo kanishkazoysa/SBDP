@@ -10,8 +10,6 @@
 #   docker-compose up                  # subsequent runs
 #   docker-compose down                # stop
 
-version: "3.9"
-
 services:
   # ── Backend: FastAPI + ML model ─────────────────────────────────
   backend:
