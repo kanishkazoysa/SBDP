@@ -17,7 +17,7 @@ No Python, Node.js, or any other setup needed!
 cd ML-Assignment
 
 # 2. Build and start everything (first time takes ~3 minutes)
-docker-compose up --build -d
+docker compose up --build -d
 
 # 3. Open in browser
 #    Frontend:  http://localhost:3000
@@ -28,10 +28,10 @@ That's it! The app will be running at **http://localhost:3000**
 
 ```bash
 # To stop
-docker-compose down
+docker compose down
 
 # To restart
-docker-compose up -d
+docker compose up -d
 ```
 
 ---
@@ -115,59 +115,3 @@ ML-Assignment/
 ```
 
 ---
-
-## 🛠️ Tech Stack
-
-| Layer          | Technology              | Purpose                                              |
-| -------------- | ----------------------- | ---------------------------------------------------- |
-| **ML Model**   | LightGBM                | Gradient-boosted decision trees for price prediction |
-| **XAI**        | SHAP TreeExplainer      | Real-time feature importance per prediction          |
-| **Backend**    | FastAPI + Uvicorn       | REST API serving model predictions                   |
-| **Frontend**   | React 18 + Vite         | Interactive dashboard                                |
-| **UI**         | Mantine v7 + Recharts   | Components & visualization                           |
-| **Deployment** | Docker + Docker Compose | Containerized deployment                             |
-
----
-
-## 📊 Model Performance
-
-| Metric | Train     | Validation | Test      |
-| ------ | --------- | ---------- | --------- |
-| R²     | 0.8390    | 0.7793     | 0.8056    |
-| MAE    | Rs. 10.2M | Rs. 11.9M  | Rs. 11.2M |
-| RMSE   | Rs. 24.2M | Rs. 27.6M  | Rs. 25.3M |
-
----
-
-## 🔗 API Endpoints
-
-| Method | Endpoint   | Description                                      |
-| ------ | ---------- | ------------------------------------------------ |
-| GET    | `/meta`    | Returns locations, property types, model metrics |
-| POST   | `/predict` | Predicts price + SHAP values for given property  |
-| GET    | `/docs`    | Swagger UI (interactive API documentation)       |
-
-### Example Prediction Request
-
-```json
-POST /predict
-{
-  "property_type": "House",
-  "location": "Colombo",
-  "bedrooms": 3,
-  "bathrooms": 2,
-  "land_size_perches": 10,
-  "quality_tier": 1,
-  "is_furnished": 0
-}
-```
-
----
-
-## 📝 Generate PDF Report
-
-```bash
-pip install fpdf2
-python generate_report.py
-# Output: ML_Assignment_Report_214046N.pdf
-```
