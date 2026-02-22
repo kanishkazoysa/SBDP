@@ -1,19 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Paper, Title, Text, Select, Grid, Button,
   NumberInput, Stack, Box, Divider, SegmentedControl, Group,
+  Loader,
 } from '@mantine/core'
 import { MapPin, Home, BedDouble, Bath, Ruler, Zap, Star, Sofa } from 'lucide-react'
 
-const DEFAULT_LOCATIONS = [
-  'Colombo', 'Gampaha', 'Kalutara', 'Kandy', 'Matara',
-  'Kurunegala', 'Hambantota', 'Galle', 'Anuradhapura', 'Matale',
-  'Ratnapura', 'Badulla', 'Monaragala', 'Polonnaruwa', 'Trincomalee',
-]
-
 const PROPERTY_TYPES = ['Land', 'House', 'Apartment']
 
-// Quality tier options — matches quality_tier in the model (0,1,2,3)
 const QUALITY_OPTIONS = [
   { label: 'Standard', value: '0' },
   { label: 'Modern', value: '1' },
@@ -21,7 +15,6 @@ const QUALITY_OPTIONS = [
   { label: 'Super Luxury', value: '3' },
 ]
 
-// Furnishing options — matches is_furnished in the model (0,1,2)
 const FURNISH_OPTIONS = [
   { label: 'Unfurnished', value: '0' },
   { label: 'Semi', value: '1' },
@@ -31,19 +24,29 @@ const FURNISH_OPTIONS = [
 export default function PredictionForm({ onPredict, loading, meta }) {
   const [form, setForm] = useState({
     property_type: 'House',
-    location: 'Colombo',
+    location: '',
     bedrooms: 3,
     bathrooms: 2,
     land_size_perches: null,
-    quality_tier: 0,   // NEW
-    is_furnished: 0,   // NEW
+    quality_tier: 0,
+    is_furnished: 0,
   })
 
-  const set = (key, val) => setForm(f => ({ ...f, [key]: val }))
+  // Sort and format locations from backend
+  const locations = (meta?.locations || []).slice().sort().map(l => ({
+    value: l,
+    label: l
+  }))
 
-  const locations = meta?.locations?.length
-    ? meta.locations.map(l => ({ value: l, label: l }))
-    : DEFAULT_LOCATIONS.map(l => ({ value: l, label: l }))
+  // Auto-select first location (or Colombo) when data arrives
+  useEffect(() => {
+    if (!form.location && locations.length > 0) {
+      const defaultLoc = locations.find(opt => opt.value === 'Colombo')
+      setForm(f => ({ ...f, location: defaultLoc ? 'Colombo' : locations[0].value }))
+    }
+  }, [locations, form.location])
+
+  const set = (key, val) => setForm(f => ({ ...f, [key]: val }))
 
   const isLand = form.property_type === 'Land'
   const isHouseOrApt = !isLand
@@ -53,30 +56,21 @@ export default function PredictionForm({ onPredict, loading, meta }) {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    const payload = {
-      property_type: form.property_type,
-      location: form.location,
+    if (!form.location) return
+    onPredict({
+      ...form,
       bedrooms: isHouseOrApt ? form.bedrooms : null,
       bathrooms: isHouseOrApt ? form.bathrooms : null,
-      land_size_perches: form.land_size_perches,
       quality_tier: isHouseOrApt ? form.quality_tier : 0,
       is_furnished: isHouseOrApt ? form.is_furnished : 0,
-    }
-    onPredict(payload)
+    })
   }
 
   return (
-    <Paper
-      component="form"
-      onSubmit={handleSubmit}
-      withBorder p="xl" radius="md"
-      style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
-    >
+    <Paper component="form" onSubmit={handleSubmit} withBorder p="xl" radius="md" style={{ flex: 1 }}>
       <Title order={4} mb="xl">Property Details</Title>
 
       <Stack gap="lg" style={{ flex: 1 }}>
-
-        {/* Property Type */}
         <Box>
           <Text size="sm" fw={500} mb={6} c="dimmed">Property Type</Text>
           <SegmentedControl
@@ -93,21 +87,20 @@ export default function PredictionForm({ onPredict, loading, meta }) {
           />
         </Box>
 
-        {/* Location */}
         <Select
-          label="District / Location"
-          leftSection={<MapPin size={15} />}
-          leftSectionPointerEvents="none"
+          label="Location"
+          placeholder={meta ? "Type to search 300+ locations..." : "Loading locations..."}
+          leftSection={meta ? <MapPin size={15} /> : <Loader size={12} />}
           data={locations}
           value={form.location}
           onChange={val => val && set('location', val)}
           searchable
-          allowDeselect={false}
+          nothingFoundMessage="No matching location found"
+          required
         />
 
-        <Divider label="Property Specifications" labelPosition="center" />
+        <Divider label="Specifications" labelPosition="center" />
 
-        {/* Bedrooms + Bathrooms */}
         {isHouseOrApt && (
           <Grid gutter="md">
             <Grid.Col span={6}>
@@ -131,12 +124,11 @@ export default function PredictionForm({ onPredict, loading, meta }) {
           </Grid>
         )}
 
-        {/* Land size */}
         <NumberInput
-          label={isLand ? 'Land Size (Perches)' : 'Land Size (Perches) — optional'}
+          label="Land Size (Perches)"
           leftSection={<Ruler size={15} />}
-          min={0.1} max={1000} decimalScale={1} step={0.5}
-          placeholder={isLand ? 'e.g. 10' : 'Leave blank if unknown'}
+          min={0.1} max={1000} decimalScale={1}
+          placeholder="e.g. 10"
           value={form.land_size_perches ?? ''}
           onChange={val => set('land_size_perches', val === '' ? null : Number(val))}
           required={isLand}
@@ -145,12 +137,8 @@ export default function PredictionForm({ onPredict, loading, meta }) {
         {isHouseOrApt && (
           <>
             <Divider label="Quality & Furnishing" labelPosition="center" />
-
-            {/* Quality Tier */}
             <Box>
-              <Text size="sm" fw={500} mb={6} c="dimmed">
-                <Group gap={4} component="span"><Star size={13} /> Quality Tier</Group>
-              </Text>
+              <Text size="sm" fw={500} mb={6} c="dimmed">Quality Tier</Text>
               <SegmentedControl
                 fullWidth
                 value={String(form.quality_tier)}
@@ -158,12 +146,8 @@ export default function PredictionForm({ onPredict, loading, meta }) {
                 data={QUALITY_OPTIONS}
               />
             </Box>
-
-            {/* Furnishing */}
             <Box>
-              <Text size="sm" fw={500} mb={6} c="dimmed">
-                <Group gap={4} component="span"><Sofa size={13} /> Furnishing</Group>
-              </Text>
+              <Text size="sm" fw={500} mb={6} c="dimmed">Furnishing</Text>
               <SegmentedControl
                 fullWidth
                 value={String(form.is_furnished)}
@@ -173,46 +157,15 @@ export default function PredictionForm({ onPredict, loading, meta }) {
             </Box>
           </>
         )}
-
-        {/* Summary pill */}
-        <Box p="sm" style={{
-          background: 'rgba(99,102,241,0.08)',
-          borderRadius: 8,
-          border: '1px solid rgba(99,102,241,0.2)',
-        }}>
-          <Group gap="xs">
-            <Home size={14} color="#6366f1" />
-            <Text size="sm" c="dimmed">
-              <Text component="span" fw={600} c="dark.0">{form.property_type}</Text>
-              {' · '}
-              <Text component="span" fw={600} c="dark.0">{form.location}</Text>
-              {isHouseOrApt && (
-                <>{' · '}<Text component="span">{form.bedrooms} bed / {form.bathrooms} bath</Text></>
-              )}
-              {form.land_size_perches && (
-                <>{' · '}<Text component="span">{form.land_size_perches} perches</Text></>
-              )}
-              {isHouseOrApt && (
-                <>
-                  {' · '}
-                  <Text component="span" c="violet.4">{qualityLabel}</Text>
-                  {form.is_furnished > 0 && (
-                    <>{' · '}<Text component="span" c="teal.4">{furnishLabel}</Text></>
-                  )}
-                </>
-              )}
-            </Text>
-          </Group>
-        </Box>
-
       </Stack>
 
       <Button
         type="submit" fullWidth size="md" mt="xl"
         loading={loading}
+        disabled={!meta || !form.location}
         leftSection={loading ? null : <Zap size={16} />}
       >
-        Predict Price
+        Predict price
       </Button>
     </Paper>
   )
