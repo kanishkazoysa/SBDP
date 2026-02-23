@@ -24,6 +24,29 @@ docker compose up --build -d
 
 The system will be live at **http://localhost:3000** with pre-trained models.
 
+### 💻 Local Development (Manual Setup)
+
+If you prefer to run the services without Docker:
+
+**1. Backend (FastAPI)**
+
+```bash
+cd backend
+python -m venv .venv
+.venv\Scripts\activate      # Windows
+# source .venv/bin/activate  # Mac/Linux
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+
+**2. Frontend (React + Vite)**
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
 ---
 
 ## 🔬 Scientific Context

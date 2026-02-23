@@ -58,7 +58,7 @@ export default function ShapChart({ shapFeatures }) {
         </Group>
       </Group>
 
-      <div style={{ width: '100%', flex: 1, minHeight: 180 }}>
+      <div style={{ width: '100%', flex: 1, minHeight: 140 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} layout="vertical" margin={{ top: 0, right: 40, left: 10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="4 4" horizontal={false} stroke="rgba(255,255,255,0.03)" />
@@ -94,7 +94,7 @@ export default function ShapChart({ shapFeatures }) {
         </ResponsiveContainer>
       </div>
 
-      <Box mt="xl" p="md" style={{ border: '1px solid rgba(16, 185, 129, 0.1)', borderRadius: 12, background: 'rgba(16, 185, 129, 0.02)' }}>
+      <Box mt="sm" p="sm" style={{ border: '1px solid rgba(16, 185, 129, 0.1)', borderRadius: 12, background: 'rgba(16, 185, 129, 0.02)' }}>
         <Text size="xs" c="dimmed" ta="center" fw={500}>
           The chart above visualizes the <span style={{ color: 'var(--tea-emerald)', fontWeight: 700 }}>Model Explanation</span>: identifying which environmental factors are mathematically responsible for the current forecast.
         </Text>

@@ -3,8 +3,6 @@ import { Activity, Microscope, Share2, Database, ShieldCheck } from 'lucide-reac
 
 const NAV_ITEMS = [
   { Icon: Activity, label: 'Analytics', sub: 'Yield Forecast', active: true },
-  { Icon: Microscope, label: 'Research', sub: 'Chemical Analysis', active: false },
-  { Icon: Database, label: 'History', sub: 'TRI Archives', active: false },
 ]
 
 export default function Sidebar({ meta }) {
@@ -28,36 +26,36 @@ export default function Sidebar({ meta }) {
             </div>
           ))}
         </Stack>
-
-        <Box mt={60} px={16}>
-          <Text size="xs" c="dimmed" tt="uppercase" fw={800} mb="lg" style={{ letterSpacing: '1.5px' }}>
-            System Integrity
-          </Text>
-
-          <Stack gap="sm">
-            <Box p="md" style={{ borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
-              <Group justify="space-between" mb={4}>
-                <Text size="xs" fw={700} c="dimmed">R² PRECISION</Text>
-                <Badge variant="dot" color="green" size="xs">ACTIVE</Badge>
-              </Group>
-              <Text size="lg" fw={900} c="white">
-                {meta?.metrics?.R2 ? (meta.metrics.R2 * 100).toFixed(1) + '%' : '...'}
-              </Text>
-            </Box>
-
-            <Box p="md" style={{ borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
-              <Text size="xs" fw={700} c="dimmed" mb={4}>TELEMETRY DATA</Text>
-              <Group gap={6}>
-                <Database size={12} color="var(--tea-emerald)" />
-                <Text size="sm" fw={800} c="white">{meta?.dataset_size || '0'}</Text>
-                <Text size="xs" c="dimmed">Data Points</Text>
-              </Group>
-            </Box>
-          </Stack>
-        </Box>
       </Box>
 
       <Box style={{ flex: 1 }} />
+
+      <Box px={16} mb="xl">
+        <Text size="xs" c="dimmed" tt="uppercase" fw={800} mb="lg" style={{ letterSpacing: '1.5px' }}>
+          System Integrity
+        </Text>
+
+        <Stack gap="sm">
+          <Box p="md" style={{ borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
+            <Group justify="space-between" mb={4}>
+              <Text size="xs" fw={700} c="dimmed">R² PRECISION</Text>
+              <Badge variant="dot" color="green" size="xs">ACTIVE</Badge>
+            </Group>
+            <Text size="lg" fw={900} c="white">
+              {meta?.metrics?.R2 ? (meta.metrics.R2 * 100).toFixed(1) + '%' : '...'}
+            </Text>
+          </Box>
+
+          <Box p="md" style={{ borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
+            <Text size="xs" fw={700} c="dimmed" mb={4}>TELEMETRY DATA</Text>
+            <Group gap={6}>
+              <Database size={12} color="var(--tea-emerald)" />
+              <Text size="sm" fw={800} c="white">{meta?.dataset_size || '0'}</Text>
+              <Text size="xs" c="dimmed">Data Points</Text>
+            </Group>
+          </Box>
+        </Stack>
+      </Box>
 
       <Box className="sidebar-footer">
         <Group gap="xs" mb={8}>

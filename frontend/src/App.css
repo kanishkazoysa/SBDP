@@ -8,6 +8,7 @@ html,
 body {
   margin: 0;
   padding: 0;
+  height: 100%;
   background-color: #05070a;
   color: #e2e8f0;
   -webkit-font-smoothing: antialiased;
@@ -28,7 +29,9 @@ body {
 .app-root {
   display: grid;
   grid-template-rows: auto 1fr;
+  min-height: 100vh;
   height: 100vh;
+  height: 100dvh; /* Modern mobile height */
   overflow: hidden;
   font-family:
     "Outfit",
@@ -42,15 +45,15 @@ body {
 .site-header {
   background: linear-gradient(90deg, #080a10 0%, #0c1218 100%);
   border-bottom: 2px solid var(--tea-emerald);
-  padding: 14px 24px;
-  z-index: 200;
+  padding: 12px 24px;
+  z-index: 500;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 /* ── Body grid: sidebar | main ─────────────────────────────────────────── */
 .app-body {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 280px 1fr;
   overflow: hidden;
   background: var(--tea-bg-darker);
 }
@@ -109,10 +112,11 @@ body {
 .main-content {
   overflow: hidden;
   height: 100%;
-  padding: 24px;
+  padding: 16px 20px;
   background: radial-gradient(circle at 50% 0%, #0d161a 0%, #05070a 100%);
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .tab-panels-row {
@@ -124,16 +128,18 @@ body {
 }
 
 .left-col {
-  flex: 0 0 540px;
+  flex: 0 0 480px;
+  max-width: 480px;
   display: flex;
   flex-direction: column;
   animation: slideInLeft 0.6s ease-out;
   min-height: 0;
+  overflow: hidden;
 }
 
 .left-col > form, .left-col > div {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -145,6 +151,8 @@ body {
   flex-direction: column;
   animation: slideInRight 0.6s ease-out;
   min-height: 0;
+  overflow: hidden;
+  padding-right: 0;
 }
 
 /* ── Premium Card Styling ───────────────────────────────────────────────── */
@@ -228,7 +236,7 @@ body {
 
 /* ── Custom Action Button ──────────────────────────────────────────────── */
 .forecast-action-btn {
-  height: 80px !important;
+  height: 52px !important;
   background: rgba(16, 185, 129, 0.05) !important;
   border: 1px solid rgba(16, 185, 129, 0.3) !important;
   border-radius: 16px !important;
@@ -289,18 +297,47 @@ body {
 }
 
 /* ── Mobile ────────────────────────────────────────────────────────────── */
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
+  .left-col {
+    flex: 0 0 420px;
+    max-width: 420px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .app-root {
+    height: auto;
+    overflow: auto;
+  }
   .app-body {
     grid-template-columns: 1fr;
+    height: auto;
+    overflow: auto;
   }
   .sidebar {
     display: none;
   }
+  .main-content {
+    height: auto;
+    overflow: visible;
+  }
   .tab-panels-row {
     flex-direction: column;
+    height: auto;
   }
   .left-col {
     flex: none;
     width: 100%;
+    max-width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .left-col > form, .left-col > div {
+    overflow: visible;
+    height: auto;
+  }
+  .right-col {
+    height: auto;
+    overflow: visible;
   }
 }

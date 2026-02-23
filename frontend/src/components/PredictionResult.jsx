@@ -30,8 +30,8 @@ export default function PredictionResult({ result }) {
   }
 
   return (
-    <Paper className="premium-card" p="xl">
-      <Group justify="space-between" mb="lg">
+    <Paper className="premium-card" p="lg">
+      <Group justify="space-between" mb="md">
         <Group gap="xs">
           <ThemeIcon variant="light" color={tierColor} radius="md">
             <Sparkles size={16} />
@@ -47,8 +47,8 @@ export default function PredictionResult({ result }) {
         background: 'rgba(12, 18, 16, 0.8)',
         border: `1px solid rgba(16, 185, 129, 0.2)`,
         borderRadius: 16,
-        padding: '24px',
-        marginBottom: 24,
+        padding: '12px 16px',
+        marginBottom: 16,
         textAlign: 'center',
         position: 'relative'
       }}>
@@ -59,7 +59,7 @@ export default function PredictionResult({ result }) {
           </Text>
         </Group>
 
-        <Text fw={900} size="3.8rem" style={{
+        <Text fw={900} size="2.8rem" style={{
           color: '#fff',
           lineHeight: 1,
         }}>

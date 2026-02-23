@@ -107,8 +107,8 @@ export default function PredictionForm({ onPredict, loading, meta }) {
   )
 
   return (
-    <Paper component="form" onSubmit={handleSubmit} className="premium-card" p="xl" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Group justify="space-between" mb="xl">
+    <Paper component="form" onSubmit={handleSubmit} className="premium-card" p="lg" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Group justify="space-between" mb="md">
         <Box>
           <Title order={3} c="white" style={{ letterSpacing: '-0.5px' }}>Estate Assessment</Title>
           <Text size="xs" c="dimmed">Input regional telemetry for Yield Forecasting</Text>
@@ -118,9 +118,9 @@ export default function PredictionForm({ onPredict, loading, meta }) {
         </ThemeIcon>
       </Group>
 
-      <Stack gap="xl" style={{ flex: 1 }}>
+      <Stack gap="md" style={{ flex: 1 }}>
         <Box>
-          <Grid gutter="xl">
+          <Grid gutter="md">
             <Grid.Col span={6}>
               <Box>
                 <InputLabel label="Growth District" icon={MapPin} info="Primary cultivation region in Sri Lanka" />
@@ -162,7 +162,7 @@ export default function PredictionForm({ onPredict, loading, meta }) {
         />
 
         <Box>
-          <Grid gutter="xl">
+          <Grid gutter="md">
             <Grid.Col span={6}>
               <Box>
                 <InputLabel label="Monthly Rainfall" icon={CloudRain} info="Synced from Open-Meteo satellite data" />
@@ -218,7 +218,7 @@ export default function PredictionForm({ onPredict, loading, meta }) {
         </Box>
 
         <Box>
-          <Grid gutter="xl">
+          <Grid gutter="md">
             <Grid.Col span={6}>
               <Box>
                 <InputLabel label="Soil pH Balance" icon={FlaskConical} info="Optimal range for tea is 4.5 - 5.5" />
@@ -258,21 +258,7 @@ export default function PredictionForm({ onPredict, loading, meta }) {
             disabled={!meta || !form.district || weatherLoading}
             className="forecast-action-btn"
           >
-            <Stack gap={2} align="center">
-              <Group gap={6} justify="center">
-                <RefreshCw size={12} className={loading ? 'spin' : ''} color="var(--tea-emerald)" />
-                <Text size="10px" fw={800} style={{ letterSpacing: '1.5px', color: 'rgba(255,255,255,0.6)' }}>
-                  INITIATE HARVEST COMPUTE
-                </Text>
-              </Group>
-              <Group gap="sm">
-                <Sprout size={20} />
-                <Text size="lg" fw={900}>GENERATE FORECAST</Text>
-              </Group>
-              <Text size="9px" fw={600} style={{ opacity: 0.5, letterSpacing: '0.5px' }}>
-                LIGHTGBM REGRESSION CORE V2.1
-              </Text>
-            </Stack>
+            GENERATE FORECAST
           </Button>
         </Box>
       </Stack>

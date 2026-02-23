@@ -100,7 +100,7 @@ export default function App() {
               <PredictionForm onPredict={handlePredict} loading={loading} meta={meta} />
             </div>
             <div className="right-col">
-              <Stack gap="xl" style={{ height: '100%' }}>
+              <Stack gap="md" style={{ height: '100%' }}>
                 {error && (
                   <Alert icon={<AlertCircle size={16} />} color="red" variant="filled" title="Operational Alert" radius="md">
                     {error}
@@ -110,8 +110,8 @@ export default function App() {
                 {result ? (
                   <>
                     <PredictionResult result={result} />
-                    <Paper className="premium-card" p="xl" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                      <Group mb="lg" justify="space-between">
+                    <Paper className="premium-card" p="lg" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                      <Group mb="sm" justify="space-between">
                         <Box>
                           <Text fw={800} size="lg" c="white">Forecast Drivers</Text>
                           <Text size="xs" c="dimmed">SHAP Explainable AI attribution analysis</Text>
