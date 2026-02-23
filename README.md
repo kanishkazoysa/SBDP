@@ -59,9 +59,8 @@ ML-Assignment/
 │   ├── src/
 │   │   ├── App.jsx                # "Green" themed Dashboard
 │   │   └── components/            # Data entry and visualization components
-├── dataset/
-│   └── tea_yield_historical_data.csv # Historical archive (TRI modeled)
-└── report_assets/                 # Generated performance plots
+└── dataset/
+    └── tea_yield_historical_data.csv # Historical archive (TRI modeled)
 ```
 
 ---
@@ -77,7 +76,7 @@ python 02_train_evaluate.py
 python 03_explainability.py
 ```
 
-Check `report_assets/` for updated performance visualizations (Actual vs Predicted, Feature Importance, SHAP Curves).
+Retraining updates the `artifacts/` folder used by the API.
 
 ---
 
