@@ -67,7 +67,7 @@ ML-Assignment/
 │   │   ├── App.jsx                # "Green" themed Dashboard
 │   │   └── components/            # Data entry and visualization components
 └── dataset/
-    └── tea_yield_historical_data.csv # Historical archive (TRI modeled)
+    └── tea_yield_historical_data.csv # raw data
 ```
 
 ---
