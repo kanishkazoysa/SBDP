@@ -100,4 +100,10 @@ docker run -d --name backend --network lankatea-net -p 8000:8000 lkzoysa/lankate
 docker run -d --name lankatea_frontend --network lankatea-net -p 3000:80 lkzoysa/lankatea-frontend:latest
 ```
 
+# 4. Access the Dashboard
+
+👉 **[http://localhost:3000](http://localhost:3000)**
+
+_Note: If you already have containers with these names, run `docker rm -f lankatea_frontend backend` before starting._
+
 ---
