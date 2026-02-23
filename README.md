@@ -87,6 +87,8 @@ Retraining updates the `artifacts/` folder used by the API.
 
 ---
 
+## 🌍 Global Cloud Deployment (Pull from Docker Hub)
+
 ```bash
 # 1. Create network
 docker network create lankatea-net
