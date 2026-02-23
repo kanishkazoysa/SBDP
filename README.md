@@ -4,23 +4,7 @@
 
 A state-of-the-art predictive system for Sri Lankan tea estates. This application uses LightGBM and XAI (SHAP) to forecast monthly harvest yields based on environmental and soil chemical profiles.
 
----
-
-## 🚀 Quick Start (Docker — Recommended)
-
-**Requirement: [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed**
-
-```bash
-# 1. Clone or extract the project
-cd ML-Assignment
-
-# 2. Build and start (Automated environment setup)
-docker compose up --build -d
-
-# 3. Open in browser
-#    Frontend:  http://localhost:3000
-#    API Docs:  http://localhost:8000/docs
-```
+````
 
 The system will be live at **http://localhost:3000** with pre-trained models.
 
@@ -37,7 +21,7 @@ python -m venv .venv
 # source .venv/bin/activate  # Mac/Linux
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
-```
+````
 
 **2. Frontend (React + Vite)**
 
@@ -103,4 +87,15 @@ Retraining updates the `artifacts/` folder used by the API.
 
 ---
 
-_Developed for the Machine Learning Module (CS4642)._
+```bash
+# 1. Create network
+docker network create lankatea-net
+
+# 2. Run Backend
+docker run -d --name backend --network lankatea-net -p 8000:8000 lkzoysa/lankatea-backend:latest
+
+# 3. Run Frontend
+docker run -d --name lankatea_frontend --network lankatea-net -p 3000:80 lkzoysa/lankatea-frontend:latest
+```
+
+---
